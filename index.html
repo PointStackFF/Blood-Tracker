@@ -8,64 +8,84 @@
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: #f4f4f5; color: #18181b;
+    margin: 0 auto; background: #f4f4f5; color: #18181b; max-width: 520px;
     font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    padding: 16px; max-width: 520px; margin-inline: auto;
+    padding: 16px;
   }
   h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -.01em; }
+  h2 { font-size: 15px; margin: 0 0 10px; }
   .sub { color: #71717a; font-size: 14px; margin-bottom: 16px; }
   .card { background: #fff; border: 1px solid #d4d4d8; border-radius: 16px; padding: 16px; margin-bottom: 14px; }
   #stage { position: relative; background: #000; border-radius: 16px; overflow: hidden; aspect-ratio: 4/3; }
   video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  #reticle {
-    position: absolute; inset: 22% 8%; border: 2px solid rgba(255,255,255,.9);
-    border-radius: 10px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35);
-  }
+  #reticle { position: absolute; inset: 30% 6%; border: 2px solid rgba(255,255,255,.9); border-radius: 8px; box-shadow: 0 0 0 100vmax rgba(0,0,0,.3); }
+  #hud { position: absolute; left: 10px; bottom: 10px; color: #fff; font: 12px/1.4 ui-monospace, Menlo, monospace; text-shadow: 0 1px 3px #000; }
   button {
-    font: inherit; font-weight: 600; width: 100%; padding: 14px;
-    border-radius: 12px; border: 1px solid #d4d4d8; background: #fff; color: #18181b;
-    margin-top: 10px; cursor: pointer;
+    font: inherit; font-weight: 600; width: 100%; padding: 14px; border-radius: 12px;
+    border: 1px solid #d4d4d8; background: #fff; color: #18181b; margin-top: 10px; cursor: pointer;
   }
   button.primary { background: #18181b; color: #fff; border-color: #18181b; }
+  button.go { background: #15803d; color: #fff; border-color: #15803d; }
   button:disabled { opacity: .4; }
-  select { font: inherit; width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #d4d4d8; margin-top: 10px; background:#fff; }
+  label.file { display: block; }
+  label.file input { display: none; }
+  select, input[type=range] { font: inherit; width: 100%; margin-top: 10px; }
+  select { padding: 12px; border-radius: 12px; border: 1px solid #d4d4d8; background: #fff; }
   .hit { border-left: 4px solid #16a34a; padding: 10px 12px; background: #f0fdf4; border-radius: 8px; margin-bottom: 8px; }
   .hit code { font-size: 15px; word-break: break-all; }
   .meta { color: #52525b; font-size: 13px; margin-top: 3px; }
-  .row { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; border-bottom: 1px solid #f4f4f5; }
+  .row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 5px 0; border-bottom: 1px solid #f4f4f5; }
+  .row span:last-child { font-family: ui-monospace, Menlo, monospace; text-align: right; }
   .ok { color: #15803d; font-weight: 600; }
   .bad { color: #b91c1c; font-weight: 600; }
   .empty { color: #71717a; font-size: 14px; }
-  h2 { font-size: 15px; margin: 0 0 8px; }
+  .tip { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 12px; font-size: 14px; line-height: 1.5; margin-top: 12px; }
 </style>
 </head>
 <body>
 
 <h1>ISBT scanner test</h1>
-<div class="sub">Point at the barcode on a blood bag. Nothing is stored or sent anywhere.</div>
+<div class="sub">Every barcode format is enabled. Nothing is stored or sent anywhere.</div>
 
-<div class="card" style="padding:0;overflow:hidden;border:none">
-  <div id="stage">
-    <video id="video" playsinline muted autoplay></video>
-    <div id="reticle"></div>
-  </div>
+<div id="stage">
+  <video id="video" playsinline muted autoplay></video>
+  <div id="reticle"></div>
+  <div id="hud"></div>
 </div>
 
 <div class="card">
   <select id="cameras"></select>
   <button id="start" class="primary">Start camera</button>
-  <button id="stop" disabled>Stop</button>
+  <div id="zoomWrap" style="display:none">
+    <div class="meta" style="margin-top:12px">Zoom — fill the frame with just the barcode</div>
+    <input type="range" id="zoom" />
+  </div>
   <button id="torch" disabled>Torch</button>
+  <button id="stop" disabled>Stop</button>
+</div>
+
+<div class="card">
+  <h2>Photo fallback</h2>
+  <div class="meta">Full-resolution still. Decodes dense barcodes the live stream can't.</div>
+  <label class="file">
+    <input type="file" id="photo" accept="image/*" capture="environment" />
+    <button class="go" onclick="document.getElementById('photo').click()">Take a photo of the barcode</button>
+  </label>
 </div>
 
 <div class="card">
   <h2>Decodes</h2>
-  <div id="hits"><div class="empty">Nothing yet. Hold steady about a hand's width away.</div></div>
+  <div id="hits"><div class="empty">Nothing yet.</div></div>
 </div>
 
 <div class="card">
-  <h2>Environment</h2>
+  <h2>Diagnostics</h2>
   <div id="env"></div>
+  <div class="tip">
+    If the live stream won't lock on, use the photo fallback. A 12&nbsp;MP still
+    has several times the detail of the video feed, which is usually the whole
+    problem with dense ISBT labels.
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
@@ -73,23 +93,50 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   const video = $("video");
-  let reader = null, controls = null, track = null, started = 0;
-  const seen = new Map();
+  let reader = null, track = null, started = 0, attempts = 0;
+  const seen = new Set();
 
-  /* --- environment checks: these explain most failures --- */
-  const env = [
-    ["Secure context (HTTPS)", window.isSecureContext],
-    ["Camera API available", !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)],
-    ["ZXing loaded", typeof ZXing !== "undefined"],
-    ["playsInline set", video.hasAttribute("playsinline")],
-  ];
-  $("env").innerHTML = env.map(([k, v]) =>
-    `<div class="row"><span>${k}</span><span class="${v ? "ok" : "bad"}">${v ? "yes" : "no"}</span></div>`
-  ).join("") + `<div class="row"><span>User agent</span></div><div class="meta">${navigator.userAgent}</div>`;
+  /* All formats. Guessing wrong is the difference between working and silent failure. */
+  function makeReader() {
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    return new ZXing.BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 80 });
+  }
 
-  if (!window.isSecureContext) {
-    $("start").disabled = true;
-    $("start").textContent = "Needs HTTPS — open the deployed URL";
+  function diag() {
+    const s = track && track.getSettings ? track.getSettings() : {};
+    const rows = [
+      ["Secure context", window.isSecureContext],
+      ["Camera API", !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)],
+      ["ZXing loaded", typeof ZXing !== "undefined"],
+    ].map(([k, v]) => `<div class="row"><span>${k}</span><span class="${v ? "ok" : "bad"}">${v ? "yes" : "no"}</span></div>`);
+
+    if (s.width) {
+      rows.push(`<div class="row"><span>Stream resolution</span><span>${s.width}×${s.height}</span></div>`);
+      rows.push(`<div class="row"><span>Focus mode</span><span>${s.focusMode || "n/a"}</span></div>`);
+      rows.push(`<div class="row"><span>Scan attempts</span><span id="att">${attempts}</span></div>`);
+      if (s.width < 1280) {
+        rows.push(`<div class="row"><span class="bad">Resolution is low — dense barcodes may not resolve. Use the photo fallback.</span></div>`);
+      }
+    }
+    rows.push(`<div class="row"><span>Browser</span></div><div class="meta">${navigator.userAgent}</div>`);
+    $("env").innerHTML = rows.join("");
+  }
+  diag();
+
+  function record(text, format, source) {
+    const key = text + "|" + source;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const secs = started ? ((performance.now() - started) / 1000).toFixed(1) + "s" : "—";
+    const el = document.createElement("div");
+    el.className = "hit";
+    el.innerHTML = `<code>${text.replace(/[<>&]/g, "")}</code>
+      <div class="meta">${format} · ${source} · ${secs}</div>`;
+    const box = $("hits");
+    if (box.querySelector(".empty")) box.innerHTML = "";
+    box.prepend(el);
+    if (navigator.vibrate) navigator.vibrate(60);
   }
 
   async function listCameras() {
@@ -99,73 +146,101 @@
       $("cameras").innerHTML = cams.length
         ? cams.map((c, i) => `<option value="${c.deviceId}">${c.label || "Camera " + (i + 1)}</option>`).join("")
         : `<option value="">Default camera</option>`;
-      // Prefer a rear camera when the labels tell us which is which.
-      const back = cams.find(c => /back|rear|environment/i.test(c.label));
+      // On multi-lens phones the plain wide lens focuses closer than the tele.
+      const back = cams.find(c => /back|rear/i.test(c.label) && !/tele|ultra/i.test(c.label))
+                || cams.find(c => /back|rear|environment/i.test(c.label));
       if (back) $("cameras").value = back.deviceId;
-    } catch (e) {
-      $("cameras").innerHTML = `<option value="">Default camera</option>`;
-    }
-  }
-
-  function record(text, format) {
-    const now = performance.now();
-    if (seen.has(text)) { seen.get(text).count++; return; }
-    seen.set(text, { count: 1 });
-    const secs = ((now - started) / 1000).toFixed(1);
-    const el = document.createElement("div");
-    el.className = "hit";
-    el.innerHTML = `<code>${text.replace(/[<>&]/g, "")}</code>
-      <div class="meta">${format} · first read after ${secs}s</div>`;
-    const box = $("hits");
-    if (box.querySelector(".empty")) box.innerHTML = "";
-    box.prepend(el);
-    if (navigator.vibrate) navigator.vibrate(60);
+    } catch (e) {}
   }
 
   async function start() {
     $("start").disabled = true;
     try {
-      const hints = new Map();
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-        ZXing.BarcodeFormat.CODE_128,   // ISBT-128 labels
-        ZXing.BarcodeFormat.CODE_39,
-        ZXing.BarcodeFormat.DATA_MATRIX,
-        ZXing.BarcodeFormat.QR_CODE,
-      ]);
-      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-
-      reader = new ZXing.BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 100 });
-      started = performance.now();
-
       const deviceId = $("cameras").value || undefined;
-      controls = await reader.decodeFromVideoDevice(deviceId, video, (result, err) => {
-        if (result) record(result.getText(), result.getBarcodeFormat());
+      // Ask for real resolution and close focus; browsers quietly downgrade if they must.
+      const constraints = {
+        audio: false,
+        video: deviceId
+          ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 },
+              focusMode: "continuous", advanced: [{ focusMode: "continuous" }] }
+          : { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 },
+              focusMode: "continuous", advanced: [{ focusMode: "continuous" }] },
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = stream;
+      await video.play();
+      track = stream.getVideoTracks()[0];
+
+      reader = makeReader();
+      started = performance.now();
+      reader.decodeFromStream(stream, video, (result) => {
+        attempts++;
+        const a = $("att"); if (a) a.textContent = attempts;
+        if (result) record(result.getText(), result.getBarcodeFormat(), "live");
       });
 
-      track = video.srcObject && video.srcObject.getVideoTracks()[0];
-      const caps = track && track.getCapabilities ? track.getCapabilities() : {};
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
       $("torch").disabled = !("torch" in caps);
+      if (caps.zoom) {
+        $("zoomWrap").style.display = "block";
+        $("zoom").min = caps.zoom.min; $("zoom").max = caps.zoom.max;
+        $("zoom").step = caps.zoom.step || 0.1;
+        $("zoom").value = track.getSettings().zoom || caps.zoom.min;
+      }
       $("stop").disabled = false;
       $("start").textContent = "Scanning…";
+
+      const s = track.getSettings();
+      $("hud").textContent = `${s.width}×${s.height}`;
       await listCameras();
+      diag();
     } catch (e) {
       $("start").disabled = false;
       $("start").textContent = "Start camera";
-      alert("Camera didn't start: " + e.message +
-        "\n\nIf you denied the permission earlier, reset it in Settings for this site.");
+      alert("Camera didn't start: " + e.message);
     }
   }
 
   function stop() {
-    try { if (reader && reader.reset) reader.reset(); } catch (e) {}
-    try { if (controls && controls.stop) controls.stop(); } catch (e) {}
+    try { reader && reader.reset && reader.reset(); } catch (e) {}
     if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-    video.srcObject = null;
-    $("start").disabled = false;
-    $("start").textContent = "Start camera";
-    $("stop").disabled = true;
-    $("torch").disabled = true;
+    video.srcObject = null; track = null;
+    $("start").disabled = false; $("start").textContent = "Start camera";
+    $("stop").disabled = true; $("torch").disabled = true;
+    $("zoomWrap").style.display = "none";
   }
+
+  /* Full-resolution still — the reliable path for dense labels. */
+  $("photo").addEventListener("change", async (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = async () => {
+      const r = makeReader();
+      let done = false;
+      // Try the whole frame, then progressively tighter centre crops.
+      for (const crop of [1, 0.7, 0.5, 0.35]) {
+        const cw = Math.round(img.width * crop), ch = Math.round(img.height * crop);
+        const cv = document.createElement("canvas");
+        cv.width = cw; cv.height = ch;
+        cv.getContext("2d").drawImage(img, (img.width - cw) / 2, (img.height - ch) / 2, cw, ch, 0, 0, cw, ch);
+        try {
+          const res = await r.decodeFromCanvas(cv);
+          record(res.getText(), res.getBarcodeFormat(), `photo ${img.width}×${img.height}`);
+          done = true;
+          break;
+        } catch (e) { /* try a tighter crop */ }
+      }
+      if (!done) {
+        record("(no barcode found in that photo)", "—", `photo ${img.width}×${img.height}`);
+      }
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+    ev.target.value = "";
+  });
 
   $("start").addEventListener("click", start);
   $("stop").addEventListener("click", stop);
@@ -173,6 +248,10 @@
     if (!track) return;
     const on = track.getSettings().torch;
     try { await track.applyConstraints({ advanced: [{ torch: !on }] }); } catch (e) {}
+  });
+  $("zoom").addEventListener("input", async (e) => {
+    if (!track) return;
+    try { await track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] }); } catch (err) {}
   });
   $("cameras").addEventListener("change", () => { if (!$("stop").disabled) { stop(); start(); } });
 
