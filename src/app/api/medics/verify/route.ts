@@ -2,21 +2,28 @@ import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
 interface VerifyBody {
-  id: string;
+  id?: string;
   pin: string;
 }
 
-// Backs the PIN pad's "sign and log" step — one tap, no session.
+// Backs the PIN pad's "sign and log" step — one tap, no session. The medic
+// only types 4 digits (no separate id entry), so a bare pin resolves whoever
+// it belongs to; passing id as well double-checks it's that specific medic.
 export async function POST(req: Request) {
   const body = (await req.json()) as VerifyBody;
-  if (!body.id || !body.pin) {
-    return NextResponse.json({ ok: false, error: "Missing id or pin." }, { status: 400 });
+  if (!body.pin) {
+    return NextResponse.json({ ok: false, error: "Missing pin." }, { status: 400 });
   }
 
-  const { rows } = await query<{ id: string; name: string }>(
-    `SELECT id, name FROM medics WHERE id = $1 AND pin = $2 AND active`,
-    [body.id, body.pin]
-  );
+  const { rows } = body.id
+    ? await query<{ id: string; name: string }>(
+        `SELECT id, name FROM medics WHERE id = $1 AND pin = $2 AND active`,
+        [body.id, body.pin]
+      )
+    : await query<{ id: string; name: string }>(
+        `SELECT id, name FROM medics WHERE pin = $1 AND active LIMIT 1`,
+        [body.pin]
+      );
 
   if (rows.length === 0) {
     return NextResponse.json({ ok: false }, { status: 401 });

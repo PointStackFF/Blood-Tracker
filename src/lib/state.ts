@@ -172,6 +172,9 @@ export function validateEvent(snapshot: UnitSnapshot, type: EventType, detail: E
       if (!detail.fromTic || !detail.toTic) {
         throw new IllegalEventError("TIC_SWAP requires both the outgoing and incoming TIC numbers.");
       }
+      if (detail.tic !== "pass") {
+        throw new IllegalEventError("The replacement TIC must pass its check before the swap is logged.");
+      }
       break;
     case "QUARANTINE":
       if (!detail.reason) throw new IllegalEventError("QUARANTINE requires a reason.");
@@ -183,6 +186,9 @@ export function validateEvent(snapshot: UnitSnapshot, type: EventType, detail: E
       break;
     case "DISCARD":
       if (!detail.reason) throw new IllegalEventError("DISCARD requires a reason.");
+      break;
+    case "FLAG":
+      if (!detail.reason) throw new IllegalEventError("FLAG requires a note on what looks wrong.");
       break;
   }
 }
