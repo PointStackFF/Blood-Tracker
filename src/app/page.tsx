@@ -2,15 +2,31 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TERMINAL, type UnitSnapshot } from "@/lib/state";
-import { ApiError, api, type Consignment, type Medic, type Unit, type UnitDetail, type UnitWithSnapshot } from "@/lib/client-api";
+import {
+  ApiError,
+  api,
+  type Consignment,
+  type Medic,
+  type NewConsignmentInput,
+  type Unit,
+  type UnitDetail,
+  type UnitWithSnapshot,
+} from "@/lib/client-api";
 import { Button, UnitTag, elapsed, hhmm, mdy } from "./_components/ui";
-import { PackIn, PackOut, RotateTic, UnitScreen, type Entry } from "./_components/flows";
+import {
+  PackIn,
+  PackOut,
+  ReceiveConsignment,
+  RotateTic,
+  UnitScreen,
+  type Entry,
+} from "./_components/flows";
 import { LogScreen, type LogRow } from "./_components/log";
 
-type View = "home" | "packout" | "packin" | "rotate" | "unit" | "log";
+type View = "home" | "packout" | "packin" | "rotate" | "unit" | "log" | "receive";
 
 export default function App() {
-  const [consignment, setConsignment] = useState<Consignment | null>(null);
+  const [consignments, setConsignments] = useState<Consignment[]>([]);
   const [units, setUnits] = useState<UnitWithSnapshot[]>([]);
   const [unitDetails, setUnitDetails] = useState<Record<string, UnitDetail>>({});
   const [medics, setMedics] = useState<Medic[]>([]);
@@ -34,12 +50,12 @@ export default function App() {
   }, [toast]);
 
   const refreshAll = useCallback(async () => {
-    const [consignments, unitsList, medicsList] = await Promise.all([
+    const [consignmentsList, unitsList, medicsList] = await Promise.all([
       api.consignments(),
       api.units(),
       api.medics(),
     ]);
-    setConsignment(consignments[0] ?? null);
+    setConsignments(consignmentsList);
     setUnits(unitsList);
     setMedics(medicsList);
     const details = await Promise.all(unitsList.map((u) => api.unit(u.unit.id)));
@@ -63,16 +79,87 @@ export default function App() {
     [units]
   );
 
-  const unitList: Unit[] = useMemo(() => units.map((u) => u.unit), [units]);
+  // The medic app is scoped to one hangar location at a time — whichever
+  // location the most-recently-issued consignment belongs to. Multiple
+  // consignments can be simultaneously relevant there (the original plus a
+  // hospital-issued replacement mid-swap).
+  const location = consignments[0]?.location ?? null;
+  const relevantConsignments = useMemo(
+    () => consignments.filter((c) => c.location === location),
+    [consignments, location]
+  );
+  const relevantIds = useMemo(
+    () => new Set(relevantConsignments.map((c) => c.id)),
+    [relevantConsignments]
+  );
+  const unitList: Unit[] = useMemo(
+    () => units.map((u) => u.unit).filter((u) => relevantIds.has(u.consignmentId)),
+    [units, relevantIds]
+  );
+  const activeConsignments = useMemo(
+    () =>
+      relevantConsignments.filter((c) =>
+        unitList.some((u) => u.consignmentId === c.id && !TERMINAL.includes(snaps[u.id]?.state))
+      ),
+    [relevantConsignments, unitList, snaps]
+  );
   const inFridge = unitList.filter((u) => snaps[u.id]?.state === "IN_FRIDGE");
   const inCooler = unitList.filter((u) => snaps[u.id]?.state === "IN_COOLER");
   const open = unitList.filter((u) => !TERMINAL.includes(snaps[u.id]?.state));
   const packOut = inCooler.length > 0;
   const pack = packOut ? snaps[inCooler[0].id] : null;
+  // The current pack's total is scoped to whichever consignment is out
+  // right now, not every unit this location has ever seen — a location
+  // can carry units from more than one consignment across its history.
+  const currentPackTotalUnits = packOut
+    ? unitList.filter((u) => u.consignmentId === inCooler[0].consignmentId).length
+    : inCooler.length;
+
+  // Prefill for "Receive new consignment": the most recently-touched
+  // known TIC/cooler among this location's units, so the medic isn't
+  // re-typing a number that hasn't changed.
+  const packContext = useMemo(() => {
+    let best: { since: string; ticNo: string; cooler: string } | null = null;
+    for (const u of unitList) {
+      const snap = snaps[u.id];
+      if (snap?.ticNo && snap?.cooler && snap?.since && (!best || snap.since > best.since)) {
+        best = { since: snap.since, ticNo: snap.ticNo, cooler: snap.cooler };
+      }
+    }
+    return best;
+  }, [unitList, snaps]);
+  const leftoverUnits = unitList.filter((u) => snaps[u.id]?.state === "IN_COOLER");
 
   const commit = useCallback(
     async (entries: Entry[], medic: { id: string; name: string }, pin: string, label: string) => {
       try {
+        await api.logEvents({
+          medicId: medic.id,
+          pin,
+          at: new Date().toISOString(),
+          entries,
+        });
+        setToast(`${label} · signed by ${medic.name}`);
+        setView("home");
+        setActiveUnitId(null);
+        await refreshAll();
+      } catch (err) {
+        setToast(err instanceof ApiError ? err.message : "Something went wrong logging that.");
+      }
+    },
+    [refreshAll]
+  );
+
+  const commitConsignment = useCallback(
+    async (
+      consignmentInput: NewConsignmentInput,
+      entries: Entry[],
+      medic: { id: string; name: string },
+      pin: string,
+      label: string
+    ) => {
+      try {
+        await api.issueConsignment(consignmentInput);
         await api.logEvents({
           medicId: medic.id,
           pin,
@@ -105,7 +192,7 @@ export default function App() {
   if (loading) {
     return <div className="p-8 text-center text-zinc-500">Loading…</div>;
   }
-  if (loadError || !consignment) {
+  if (loadError || consignments.length === 0) {
     return (
       <div className="p-8 text-center text-rose-700">
         {loadError || "No consignment found — run `npm run db:seed`."}
@@ -114,16 +201,18 @@ export default function App() {
   }
 
   const activeUnit = activeUnitId ? unitList.find((u) => u.id === activeUnitId) ?? null : null;
+  const headerConsignments = activeConsignments.length > 0 ? activeConsignments : relevantConsignments.slice(0, 1);
 
   return (
     <div className="min-h-screen bg-zinc-100 font-sans text-zinc-900">
       <div className="mx-auto min-h-screen max-w-[480px] bg-zinc-50 shadow-sm">
         <header className="border-b border-zinc-200 bg-white px-5 pb-4 pt-5">
-          <div className="text-[20px] font-semibold tracking-tight">{consignment.location}</div>
-          <div className="mt-0.5 text-[14px] text-zinc-500">
-            Consignment {consignment.id} · issued {mdy(new Date(consignment.issuedAt))} by{" "}
-            {consignment.issuedBy}
-          </div>
+          <div className="text-[20px] font-semibold tracking-tight">{location}</div>
+          {headerConsignments.map((c) => (
+            <div key={c.id} className="mt-0.5 text-[14px] text-zinc-500">
+              Consignment {c.id} · issued {mdy(new Date(c.issuedAt))} by {c.issuedBy}
+            </div>
+          ))}
         </header>
 
         {view === "home" && (
@@ -186,6 +275,9 @@ export default function App() {
                   Take the pack out
                 </Button>
               )}
+              <Button variant="quiet" onClick={() => setView("receive")}>
+                Receive new consignment
+              </Button>
               <Button variant="quiet" onClick={() => setView("log")}>
                 View custody log
               </Button>
@@ -210,7 +302,7 @@ export default function App() {
             now={now}
             onCommit={commit}
             onBack={() => setView("home")}
-            totalUnits={unitList.length}
+            totalUnits={currentPackTotalUnits}
           />
         )}
 
@@ -238,6 +330,19 @@ export default function App() {
         )}
 
         {view === "log" && <LogScreen rows={logRows} onBack={() => setView("home")} />}
+
+        {view === "receive" && location && (
+          <ReceiveConsignment
+            location={location}
+            leftoverUnits={leftoverUnits}
+            nextSeq={relevantConsignments.length + 1}
+            prefillTic={packContext?.ticNo ?? null}
+            prefillCooler={packContext?.cooler ?? null}
+            now={now}
+            onCommit={commitConsignment}
+            onBack={() => setView("home")}
+          />
+        )}
       </div>
 
       {toast && (

@@ -13,8 +13,29 @@ pitched to EMS supervision and the blood bank once it demos well.
 
 The blood bank issues **two units of O Neg red cells** to a remote airport
 location (MacArthur, sometimes Gabreski) and fills in the top of the paper form.
-The units live in a fridge at that location. When a call comes in, a flight medic
-takes them out; when the call ends, whatever wasn't used goes back.
+The units live in a fridge at that location.
+
+0. Both units, packed in one TIC, sit in the fridge at the hangar.
+1. A call comes in.
+2. The flight medic packs both units into the TIC, and the TIC into the cooler.
+3. One of three things happens:
+   - **(a)** No transfusion — the intact cooler (TIC, both units) returns to base.
+   - **(b)** One unit is transfused; the patient is transported.
+   - **(c)** Both units are transfused; the patient is transported.
+4. **In (b) and (c) — the common case, not the exception — at the home
+   hospital (99% of the time) the medic hands over whatever's left in the
+   TIC (the unused unit in case (b); nothing in case (c)) to that hospital's
+   blood bank, and receives a fresh two-unit consignment in exchange.** The
+   new pair gets packed into the same TIC and cooler and carried back to the
+   hangar fridge. If the flight isn't at the home hospital, it flies there
+   first for this swap.
+
+So "whatever wasn't used goes straight back to the hangar fridge" is only
+true for outcome (a). The far more common path — any transfusion at all —
+routes through a hospital-side consignment swap before anything returns to
+the hangar. **The app must be able to log that swap**: closing out whatever
+was left in the TIC to the receiving blood bank, and receiving/packing a
+brand-new consignment away from the hangar.
 
 Every removal and return is hand-documented on the form: date, time, visual
 inspection pass/fail, initials, TIC check pass/fail, cooler number, and
@@ -78,8 +99,10 @@ chain still stands alone.
 ```
 IN_FRIDGE ⇄ IN_COOLER
     │           │
-    │           ├─→ TRANSFUSED (terminal)
-    │           └─→ DISCARDED  (terminal)
+    │           ├─→ TRANSFUSED  (terminal)
+    │           ├─→ DISCARDED   (terminal)
+    │           └─→ RETURNED_BB (terminal) — e.g. a leftover unit handed to
+    │                            a hospital blood bank at a consignment swap
     ├─→ RETURNED_BB (terminal)
     └─→ QUARANTINE ─→ DISCARDED
 ```
@@ -101,7 +124,7 @@ Forcing functions that fall out of this:
 | File | What it is |
 |---|---|
 | `isbt.js` | ISBT-128 unit-number parser. Tested, self-contained, port as-is. |
-| `index.html` | Standalone scanner test page. Source of the working scanner settings. |
+| `index.html` | Standalone scanner test page. Source of the working scanner settings — now ported into the real app as `Scanner` (`src/app/_components/scanner.tsx`), wired into `ScanRow` and `ReceiveConsignment`. Kept as a lightweight standalone harness for isolated scanner debugging. |
 | `blood-custody-log-v2.jsx` | React prototype of the full medic flow. In-memory only. Design reference for screens and copy. |
 | paper form photos | Every field on them has to land somewhere. |
 

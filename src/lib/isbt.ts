@@ -61,6 +61,23 @@ export function dinKey(facility: string, year: string, serial: string): string {
   return `${facility}${year}${serial}`;
 }
 
+/**
+ * Manual entry takes the printed form (facility, year, serial, then one or
+ * two trailing manual-entry check characters — see CLAUDE.md's ISBT-128
+ * label facts). Those check characters are never part of the DIN itself,
+ * so they're stripped before building the same scanned-format string
+ * parseDIN expects (undivided, flags "00").
+ */
+export function parsePrintedUnitNumber(raw: string): Din | null {
+  const m = raw
+    .trim()
+    .toUpperCase()
+    .match(/^([A-Z]\d{4})\s+(\d{2})\s+(\d{6})\s+\d(\s*\d)?$/);
+  if (!m) return null;
+  const [, facility, year, serial] = m;
+  return parseDIN(`${facility}${year}${serial}00`);
+}
+
 const OTHERS: [RegExp, string][] = [
   [/^=</, "product code"],
   [/^=%/, "ABO/Rh"],

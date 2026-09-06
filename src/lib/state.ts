@@ -3,8 +3,11 @@
  *
  *   IN_FRIDGE ⇄ IN_COOLER
  *       │           │
- *       │           ├─→ TRANSFUSED (terminal)
- *       │           └─→ DISCARDED  (terminal)
+ *       │           ├─→ TRANSFUSED  (terminal)
+ *       │           ├─→ DISCARDED   (terminal)
+ *       │           └─→ RETURNED_BB (terminal) — handed to a blood bank
+ *       │                            straight from the cooler, e.g. a
+ *       │                            leftover unit swapped out at a hospital
  *       ├─→ RETURNED_BB (terminal)
  *       └─→ QUARANTINE ─→ DISCARDED
  *
@@ -134,7 +137,7 @@ export function legalActions(state: UnitState): EventType[] {
     case "IN_FRIDGE":
       return ["REM", "RETURN_BB", "QUARANTINE", "FLAG"];
     case "IN_COOLER":
-      return ["RET", "TIC_SWAP", "TRANSFUSE", "DISCARD", "QUARANTINE", "FLAG"];
+      return ["RET", "TIC_SWAP", "TRANSFUSE", "DISCARD", "RETURN_BB", "QUARANTINE", "FLAG"];
     case "QUARANTINE":
       return ["DISCARD", "FLAG"];
     default:

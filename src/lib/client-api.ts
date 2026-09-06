@@ -44,6 +44,27 @@ export interface UnitDetail {
   legalActions: EventType[];
 }
 
+export interface NewUnitInput {
+  id: string;
+  unitNumber: string;
+  facility: string;
+  collectionYear: string;
+  serial: string;
+  productCode: string;
+  aboRh: string;
+  expires: string;
+}
+
+export interface NewConsignmentInput {
+  id: string;
+  location: string;
+  bloodBankRef?: string;
+  issuedBy: string;
+  issuedAt: string;
+  medicId: string;
+  units: NewUnitInput[];
+}
+
 class ApiError extends Error {}
 
 async function json<T>(res: Response): Promise<T> {
@@ -79,6 +100,13 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }).then((r) => json<{ batchId: string | null; eventIds: number[] }>(r)),
+
+  issueConsignment: (body: NewConsignmentInput) =>
+    fetch("/api/consignments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then((r) => json<{ id: string; batchId: string }>(r)),
 };
 
 export { ApiError };

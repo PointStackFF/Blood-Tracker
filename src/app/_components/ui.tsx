@@ -3,6 +3,8 @@
 import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
 import type { UnitSnapshot, UnitState } from "@/lib/state";
 import type { Unit } from "@/lib/client-api";
+import { parsePrintedUnitNumber, resolveScan } from "@/lib/isbt";
+import { Scanner } from "./scanner";
 
 export const STATE_LABEL: Record<UnitState, string> = {
   IN_FRIDGE: "In fridge",
@@ -181,22 +183,49 @@ export function ScanRow({
   scanned: boolean;
   onScan: () => void;
 }) {
+  const [scanning, setScanning] = useState(false);
+
+  const validate = (raw: string) => {
+    const r = resolveScan(raw, [{ id: unit.id, dinKey: unit.dinKey }]);
+    if (r.ok) return { ok: true as const, value: undefined };
+    return { ok: false as const, message: r.message };
+  };
+
   return (
-    <button
-      type="button"
-      onClick={onScan}
-      className={`flex w-full items-center justify-between rounded-xl px-4 py-3.5 ring-1 transition ${
-        scanned ? "bg-emerald-50 ring-emerald-400" : "bg-white ring-zinc-300 hover:bg-zinc-50"
-      }`}
-    >
-      <div className="text-left">
-        <div className="text-[13px] font-semibold text-zinc-500">Unit {unit.id.slice(1)}</div>
-        <div className="font-mono text-[16px] text-zinc-900">{unit.unitNumber}</div>
-      </div>
-      <span className={`text-[15px] font-medium ${scanned ? "text-emerald-700" : "text-zinc-400"}`}>
-        {scanned ? "Scanned" : "Scan"}
-      </span>
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => (scanned ? onScan() : setScanning(true))}
+        className={`flex w-full items-center justify-between rounded-xl px-4 py-3.5 ring-1 transition ${
+          scanned ? "bg-emerald-50 ring-emerald-400" : "bg-white ring-zinc-300 hover:bg-zinc-50"
+        }`}
+      >
+        <div className="text-left">
+          <div className="text-[13px] font-semibold text-zinc-500">Unit {unit.id.slice(1)}</div>
+          <div className="font-mono text-[16px] text-zinc-900">{unit.unitNumber}</div>
+        </div>
+        <span className={`text-[15px] font-medium ${scanned ? "text-emerald-700" : "text-zinc-400"}`}>
+          {scanned ? "Scanned" : "Scan"}
+        </span>
+      </button>
+      {scanning && (
+        <Scanner
+          title={`Scan unit ${unit.id.slice(1)}`}
+          hint={unit.unitNumber}
+          validateScan={validate}
+          validateManual={(raw) => {
+            const din = parsePrintedUnitNumber(raw);
+            if (!din) return { ok: false, message: "Doesn't look like a full unit number — check for a missing or extra digit." };
+            return validate(`${din.key}00`);
+          }}
+          onAccepted={() => {
+            setScanning(false);
+            onScan();
+          }}
+          onCancel={() => setScanning(false)}
+        />
+      )}
+    </>
   );
 }
 
