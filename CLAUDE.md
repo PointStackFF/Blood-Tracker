@@ -189,6 +189,11 @@ W1833    facility
 
 - **The app infers the action.** It never asks "are you removing or returning?"
   It replays history and offers only what's legal right now.
+- **Base (location) is a manual, per-phone choice, not inferred.** A flight
+  medic working MacArthur never touches Gabreski's inventory, and the two
+  can have simultaneously active consignments — the app can't guess which
+  one a given phone belongs to from data alone. Persisted in
+  `localStorage`; a "Switch base" control resets it.
 - **MRN is the primary field on transfusion**, per the paper form. A fallback
   captures an incident number when the MRN isn't yet assigned, flagging the record
   for reconciliation. If medics always have the MRN at point of care, cut it.
