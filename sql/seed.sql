@@ -7,6 +7,12 @@ INSERT INTO medics (id, name, pin) VALUES
   ('2280', 'J. Marek', '2280')
 ON CONFLICT (id) DO NOTHING;
 
+-- Supervisors — the only medics who can sign a biweekly base restock.
+INSERT INTO medics (id, name, pin, role) VALUES
+  ('6595', 'Chris Evers', '6595', 'supervisor'),
+  ('1111', 'Chris Gallway', '1111', 'supervisor')
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO consignments
   (id, location, blood_bank_ref, issued_by, issued_at, stock_moved_in_wellsky, uncrossmatched_sticker_affixed)
 VALUES

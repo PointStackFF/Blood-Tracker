@@ -107,6 +107,19 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }).then((r) => json<{ id: string; batchId: string }>(r)),
+
+  restock: (body: {
+    oldUnitIds: string[];
+    consignment: Omit<NewConsignmentInput, "medicId">;
+    medicId: string;
+    pin: string;
+    at: string;
+  }) =>
+    fetch("/api/restock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then((r) => json<{ ok: boolean }>(r)),
 };
 
 export { ApiError };

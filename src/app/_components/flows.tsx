@@ -15,6 +15,14 @@ export interface Entry {
 
 export type Committer = (entries: Entry[], medic: { id: string; name: string }, pin: string, label: string) => void;
 
+export type RestockCommitter = (
+  oldUnitIds: string[],
+  consignment: Omit<NewConsignmentInput, "medicId">,
+  medic: { id: string; name: string },
+  pin: string,
+  label: string
+) => void;
+
 export type ConsignmentCommitter = (
   consignment: NewConsignmentInput,
   entries: Entry[],
@@ -870,6 +878,239 @@ export function ReceiveConsignment({
             ];
 
             onCommit(consignment, entries, medic, pin, `Received ${consignmentId.trim()}`);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * Biweekly base restock — supervisor-only. Whatever's currently in the
+ * fridge (unused) goes back to the hospital blood bank; a fresh pair
+ * lands straight in the fridge. No TIC/cooler step — nothing is being
+ * packed for transport here, just stocked.
+ * ------------------------------------------------------------------ */
+
+export function RestockBase({
+  location,
+  oldUnits,
+  nextSeq,
+  now,
+  onCommit,
+  onBack,
+}: {
+  location: string;
+  oldUnits: Unit[];
+  nextSeq: number;
+  now: number;
+  onCommit: RestockCommitter;
+  onBack: () => void;
+}) {
+  const [consignmentId, setConsignmentId] = useState("");
+  const [issuedBy, setIssuedBy] = useState("");
+  const [unitEntries, setUnitEntries] = useState<[UnitEntry, UnitEntry]>([
+    { raw: "", din: null },
+    { raw: "", din: null },
+  ]);
+  const [scanning, setScanning] = useState<0 | 1 | null>(null);
+  const [expires, setExpires] = useState<[string, string]>(["", ""]);
+  const [visuals, setVisuals] = useState<[("pass" | "fail" | null), ("pass" | "fail" | null)]>([null, null]);
+  const [signing, setSigning] = useState(false);
+
+  const dins = unitEntries.map((e) => e.din);
+  const unitNumbersEntered = unitEntries.every((e) => e.raw.trim());
+  const unitNumbersValid = dins.every((d) => d !== null);
+  const expiresEntered = expires.every((e) => e.trim());
+  const visualsSet = visuals.every((v) => v !== null);
+  const passing = [0, 1].filter((i) => visuals[i] === "pass") as (0 | 1)[];
+  const failing = [0, 1].filter((i) => visuals[i] === "fail") as (0 | 1)[];
+
+  const ready =
+    consignmentId.trim() &&
+    issuedBy.trim() &&
+    unitNumbersEntered &&
+    unitNumbersValid &&
+    expiresEntered &&
+    visualsSet &&
+    passing.length > 0;
+
+  const summary = `Restock ${location} with ${consignmentId.trim()}`;
+
+  return (
+    <div className="px-5 pb-10 pt-4">
+      <button onClick={onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+        Back
+      </button>
+      <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Restock this base</h2>
+      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600">
+        Scheduled biweekly swap — supervisor sign-off required. Whatever&apos;s in the fridge goes
+        back to the blood bank; the fresh pair goes straight in.
+      </p>
+
+      {oldUnits.length > 0 && (
+        <Field
+          label="Returning to the hospital blood bank"
+          hint="Currently in the fridge — no further input needed."
+        >
+          <div className="space-y-2">
+            {oldUnits.map((u) => (
+              <div key={u.id} className="rounded-xl bg-zinc-100 px-4 py-3 text-[15px] text-zinc-700">
+                Unit {u.id.slice(1)} · <span className="font-mono">{u.unitNumber}</span>
+              </div>
+            ))}
+          </div>
+        </Field>
+      )}
+
+      <Field label="Consignment ID" hint="From the blood bank's paper form.">
+        <input
+          value={consignmentId}
+          onChange={(e) => setConsignmentId(e.target.value)}
+          placeholder="C-99201-1"
+          className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[17px] focus:border-zinc-900 focus:outline-none"
+        />
+      </Field>
+      <Field label="Issued by" hint="Blood bank technologist.">
+        <input
+          value={issuedBy}
+          onChange={(e) => setIssuedBy(e.target.value)}
+          placeholder="Name"
+          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+        />
+      </Field>
+
+      {([0, 1] as const).map((i) => (
+        <div key={i} className="mt-5 rounded-xl bg-zinc-50 p-4 ring-1 ring-zinc-200">
+          <div className="text-[14px] font-semibold text-zinc-500">New unit {i === 0 ? "A" : "B"}</div>
+          <div className="mt-2 text-[13px] text-zinc-500">{NEW_UNIT_ABO_RH} · {NEW_UNIT_PRODUCT_CODE}</div>
+          <Field label="Unit number">
+            <div className="flex gap-2">
+              <input
+                value={unitEntries[i].raw}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const next = [...unitEntries] as [UnitEntry, UnitEntry];
+                  next[i] = { raw, din: raw.trim() ? parsePrintedUnitNumber(raw) : null };
+                  setUnitEntries(next);
+                }}
+                placeholder="W1833 26 411203 8"
+                className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[16px] focus:border-zinc-900 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setScanning(i)}
+                className="shrink-0 rounded-xl bg-zinc-900 px-4 py-3 text-[15px] font-semibold text-white active:scale-[.99]"
+              >
+                Scan
+              </button>
+            </div>
+            {unitEntries[i].raw.trim() && !dins[i] && (
+              <div className="mt-1.5 text-[14px] text-rose-700">
+                Doesn&apos;t look like a full unit number — check for a missing or extra digit.
+              </div>
+            )}
+          </Field>
+          {scanning === i && (
+            <Scanner
+              title={`Scan new unit ${i === 0 ? "A" : "B"}`}
+              validateScan={validateNewUnitScan}
+              validateManual={(raw) => {
+                const din = parsePrintedUnitNumber(raw);
+                if (!din) {
+                  return { ok: false, message: "Doesn't look like a full unit number — check for a missing or extra digit." };
+                }
+                return { ok: true, value: din };
+              }}
+              onAccepted={(din) => {
+                setScanning(null);
+                const next = [...unitEntries] as [UnitEntry, UnitEntry];
+                next[i] = { raw: din.display, din };
+                setUnitEntries(next);
+              }}
+              onCancel={() => setScanning(null)}
+            />
+          )}
+          <Field label="Expires">
+            <input
+              type="date"
+              value={expires[i]}
+              onChange={(e) => {
+                const next = [...expires] as [string, string];
+                next[i] = e.target.value;
+                setExpires(next);
+              }}
+              className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+            />
+          </Field>
+          <Field label="Visual inspection">
+            <Toggle
+              value={visuals[i]}
+              onChange={(v) => {
+                const next = [...visuals] as [("pass" | "fail" | null), ("pass" | "fail" | null)];
+                next[i] = v;
+                setVisuals(next);
+              }}
+            />
+          </Field>
+        </div>
+      ))}
+
+      {failing.length > 0 && (
+        <div className="mt-4 rounded-xl bg-rose-50 p-4 text-[15px] leading-relaxed text-rose-900 ring-1 ring-rose-200">
+          New unit{failing.length > 1 ? "s" : ""} {failing.map((i) => (i === 0 ? "A" : "B")).join(" and ")}{" "}
+          fail{failing.length === 1 ? "s" : ""} inspection and won&apos;t be stocked. Tell the blood
+          bank before they leave.
+        </div>
+      )}
+
+      <div className="mt-8">
+        <Button onClick={() => setSigning(true)} disabled={!ready}>
+          Sign and log
+        </Button>
+        <div className="mt-3 text-center text-[13px] text-zinc-500">
+          Timestamped {mdy(new Date(now))} at {hhmm(new Date(now))}
+        </div>
+      </div>
+
+      {signing && (
+        <PinPad
+          summary={summary}
+          onCancel={() => setSigning(false)}
+          onSigned={(medic, pin) => {
+            setSigning(false);
+            const idA = `U${nextSeq}A`;
+            const idB = `U${nextSeq}B`;
+            const ids: [string, string] = [idA, idB];
+            const nowIso = new Date(now).toISOString();
+
+            const consignment: Omit<NewConsignmentInput, "medicId"> = {
+              id: consignmentId.trim(),
+              location,
+              issuedBy: issuedBy.trim(),
+              issuedAt: nowIso,
+              units: passing.map((i) => {
+                const din = dins[i]!;
+                return {
+                  id: ids[i],
+                  unitNumber: unitEntries[i].raw.trim(),
+                  facility: din.facility,
+                  collectionYear: din.year,
+                  serial: din.serial,
+                  productCode: NEW_UNIT_PRODUCT_CODE,
+                  aboRh: NEW_UNIT_ABO_RH,
+                  expires: new Date(`${expires[i]}T23:59:00`).toISOString(),
+                };
+              }),
+            };
+
+            onCommit(
+              oldUnits.map((u) => u.id),
+              consignment,
+              medic,
+              pin,
+              `Restocked ${consignmentId.trim()}`
+            );
           }}
         />
       )}

@@ -17,13 +17,14 @@ import {
   PackIn,
   PackOut,
   ReceiveConsignment,
+  RestockBase,
   RotateTic,
   UnitScreen,
   type Entry,
 } from "./_components/flows";
 import { LogScreen, type LogRow } from "./_components/log";
 
-type View = "home" | "packout" | "packin" | "rotate" | "unit" | "log" | "receive";
+type View = "home" | "packout" | "packin" | "rotate" | "unit" | "log" | "receive" | "restock";
 
 const LOCATIONS = ["MacArthur Airport", "Gabreski Airport"] as const;
 const LOCATION_STORAGE_KEY = "blood-tracker-location";
@@ -195,6 +196,33 @@ export default function App() {
     [refreshAll]
   );
 
+  const commitRestock = useCallback(
+    async (
+      oldUnitIds: string[],
+      consignmentInput: Omit<NewConsignmentInput, "medicId">,
+      medic: { id: string; name: string },
+      pin: string,
+      label: string
+    ) => {
+      try {
+        await api.restock({
+          oldUnitIds,
+          consignment: consignmentInput,
+          medicId: medic.id,
+          pin,
+          at: new Date().toISOString(),
+        });
+        setToast(`${label} · signed by ${medic.name}`);
+        setView("home");
+        setActiveUnitId(null);
+        await refreshAll();
+      } catch (err) {
+        setToast(err instanceof ApiError ? err.message : "Something went wrong logging that.");
+      }
+    },
+    [refreshAll]
+  );
+
   const logRows: LogRow[] = useMemo(() => {
     const rows = Object.values(unitDetails).flatMap((d) =>
       d.events.map((event) => ({
@@ -324,6 +352,9 @@ export default function App() {
               <Button variant="quiet" onClick={() => setView("receive")}>
                 Receive new consignment
               </Button>
+              <Button variant="quiet" onClick={() => setView("restock")}>
+                Restock this base
+              </Button>
               <Button variant="quiet" onClick={() => setView("log")}>
                 View custody log
               </Button>
@@ -388,6 +419,17 @@ export default function App() {
             prefillCooler={packContext?.cooler ?? null}
             now={now}
             onCommit={commitConsignment}
+            onBack={() => setView("home")}
+          />
+        )}
+
+        {view === "restock" && location && (
+          <RestockBase
+            location={location}
+            oldUnits={inFridge}
+            nextSeq={relevantConsignments.length + 1}
+            now={now}
+            onCommit={commitRestock}
             onBack={() => setView("home")}
           />
         )}

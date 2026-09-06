@@ -44,6 +44,11 @@ CREATE TABLE IF NOT EXISTS medics (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Role gate for the biweekly base restock — the one action that isn't
+-- open to any signed-in medic (see CLAUDE.md).
+ALTER TABLE medics ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'medic'
+  CHECK (role IN ('medic', 'supervisor'));
+
 CREATE TABLE IF NOT EXISTS events (
   id               BIGSERIAL PRIMARY KEY,
   unit_id          TEXT NOT NULL REFERENCES units(id),

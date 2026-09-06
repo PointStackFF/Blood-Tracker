@@ -194,6 +194,15 @@ W1833    facility
   can have simultaneously active consignments — the app can't guess which
   one a given phone belongs to from data alone. Persisted in
   `localStorage`; a "Switch base" control resets it.
+- **The biweekly base restock is supervisor-gated, for real.** Every other
+  Wednesday a supervisor (not a flight medic) drives a fresh consignment to
+  each base, pulls whatever's currently in the fridge (unused — it goes
+  back to the hospital blood bank, not discarded), and stocks the fresh
+  pair. Unlike every other signed action in this app, this one checks the
+  signing medic's `role = 'supervisor'` server-side (`POST /api/restock`)
+  and rejects a regular medic's otherwise-valid PIN. No TIC/cooler step —
+  nothing is being packed for transport, a unit issued straight into the
+  fridge is already `IN_FRIDGE` with no `REM` needed.
 - **MRN is the primary field on transfusion**, per the paper form. A fallback
   captures an incident number when the MRN isn't yet assigned, flagging the record
   for reconciliation. If medics always have the MRN at point of care, cut it.
