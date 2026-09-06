@@ -12,7 +12,7 @@ import {
   type UnitDetail,
   type UnitWithSnapshot,
 } from "@/lib/client-api";
-import { Button, UnitTag, elapsed, hhmm, mdy } from "./_components/ui";
+import { Button, PinPad, UnitTag, elapsed, hhmm, mdy } from "./_components/ui";
 import {
   PackIn,
   PackOut,
@@ -42,6 +42,7 @@ export default function App() {
   const [view, setView] = useState<View>("home");
   const [activeUnitId, setActiveUnitId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+  const [restockGate, setRestockGate] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -352,7 +353,7 @@ export default function App() {
               <Button variant="quiet" onClick={() => setView("receive")}>
                 Receive new consignment
               </Button>
-              <Button variant="quiet" onClick={() => setView("restock")}>
+              <Button variant="quiet" onClick={() => setRestockGate(true)}>
                 Restock this base
               </Button>
               <Button variant="quiet" onClick={() => setView("log")}>
@@ -439,6 +440,18 @@ export default function App() {
         <div className="fixed inset-x-0 bottom-6 z-30 mx-auto w-[min(440px,90vw)] rounded-xl bg-zinc-900 px-4 py-3 text-center text-[15px] text-white">
           {toast}
         </div>
+      )}
+
+      {restockGate && (
+        <PinPad
+          summary="Supervisor PIN required to restock this base"
+          requireRole="supervisor"
+          onCancel={() => setRestockGate(false)}
+          onSigned={() => {
+            setRestockGate(false);
+            setView("restock");
+          }}
+        />
       )}
     </div>
   );

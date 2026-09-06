@@ -587,6 +587,15 @@ export function UnitScreen({
 const NEW_UNIT_PRODUCT_CODE = "E0336";
 const NEW_UNIT_ABO_RH = "O Neg";
 
+// Consignment IDs aren't something a medic ever types or reads off a real
+// paper form for these app-created consignments — the original blood-bank
+// issue has one printed on it, but a hospital swap or a restock doesn't.
+// The app generates its own, quietly, as an internal record identifier.
+function autoConsignmentId(location: string, nextSeq: number): string {
+  const code = location.startsWith("Mac") ? "MAC" : location.startsWith("Gab") ? "GAB" : "LOC";
+  return `${code}-${nextSeq}`;
+}
+
 type UnitEntry = { raw: string; din: Din | null };
 
 function validateNewUnitScan(raw: string): { ok: true; value: Din } | { ok: false; message: string } {
@@ -616,7 +625,6 @@ export function ReceiveConsignment({
   onCommit: ConsignmentCommitter;
   onBack: () => void;
 }) {
-  const [consignmentId, setConsignmentId] = useState("");
   const [issuedBy, setIssuedBy] = useState("");
   const [unitEntries, setUnitEntries] = useState<[UnitEntry, UnitEntry]>([
     { raw: "", din: null },
@@ -631,6 +639,7 @@ export function ReceiveConsignment({
   const [cooler, setCooler] = useState(String(prefillCooler ?? ""));
   const [signing, setSigning] = useState(false);
 
+  const consignmentId = autoConsignmentId(location, nextSeq);
   const dins = unitEntries.map((e) => e.din);
   const unitNumbersEntered = unitEntries.every((e) => e.raw.trim());
   const unitNumbersValid = dins.every((d) => d !== null);
@@ -640,7 +649,6 @@ export function ReceiveConsignment({
   const failing = [0, 1].filter((i) => visuals[i] === "fail") as (0 | 1)[];
 
   const ready =
-    consignmentId.trim() &&
     issuedBy.trim() &&
     unitNumbersEntered &&
     unitNumbersValid &&
@@ -682,14 +690,6 @@ export function ReceiveConsignment({
         </Field>
       )}
 
-      <Field label="Consignment ID" hint="From the hospital blood bank's paper form.">
-        <input
-          value={consignmentId}
-          onChange={(e) => setConsignmentId(e.target.value)}
-          placeholder="C-99201-1"
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[17px] focus:border-zinc-900 focus:outline-none"
-        />
-      </Field>
       <Field label="Issued by" hint="Hospital blood bank technologist.">
         <input
           value={issuedBy}
@@ -907,7 +907,6 @@ export function RestockBase({
   onCommit: RestockCommitter;
   onBack: () => void;
 }) {
-  const [consignmentId, setConsignmentId] = useState("");
   const [issuedBy, setIssuedBy] = useState("");
   const [unitEntries, setUnitEntries] = useState<[UnitEntry, UnitEntry]>([
     { raw: "", din: null },
@@ -918,6 +917,7 @@ export function RestockBase({
   const [visuals, setVisuals] = useState<[("pass" | "fail" | null), ("pass" | "fail" | null)]>([null, null]);
   const [signing, setSigning] = useState(false);
 
+  const consignmentId = autoConsignmentId(location, nextSeq);
   const dins = unitEntries.map((e) => e.din);
   const unitNumbersEntered = unitEntries.every((e) => e.raw.trim());
   const unitNumbersValid = dins.every((d) => d !== null);
@@ -927,7 +927,6 @@ export function RestockBase({
   const failing = [0, 1].filter((i) => visuals[i] === "fail") as (0 | 1)[];
 
   const ready =
-    consignmentId.trim() &&
     issuedBy.trim() &&
     unitNumbersEntered &&
     unitNumbersValid &&
@@ -963,14 +962,6 @@ export function RestockBase({
         </Field>
       )}
 
-      <Field label="Consignment ID" hint="From the blood bank's paper form.">
-        <input
-          value={consignmentId}
-          onChange={(e) => setConsignmentId(e.target.value)}
-          placeholder="C-99201-1"
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[17px] focus:border-zinc-900 focus:outline-none"
-        />
-      </Field>
       <Field label="Issued by" hint="Blood bank technologist.">
         <input
           value={issuedBy}

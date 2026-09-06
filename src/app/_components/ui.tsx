@@ -274,10 +274,12 @@ export function TicSwapPanel({
 
 export function PinPad({
   summary,
+  requireRole,
   onCancel,
   onSigned,
 }: {
   summary: string;
+  requireRole?: string;
   onCancel: () => void;
   onSigned: (medic: { id: string; name: string }, pin: string) => void;
 }) {
@@ -296,13 +298,13 @@ export function PinPad({
         const res = await fetch("/api/medics/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pin: next }),
+          body: JSON.stringify({ pin: next, role: requireRole }),
         });
         const body = await res.json();
         if (body.ok) {
           onSigned(body.medic, next);
         } else {
-          setError("That PIN isn't recognized. Try again.");
+          setError(body.error || "That PIN isn't recognized. Try again.");
           setPin("");
         }
       } catch {
