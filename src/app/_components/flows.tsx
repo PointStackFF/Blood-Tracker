@@ -828,8 +828,9 @@ export function ReceiveConsignment({
           onCancel={() => setSigning(false)}
           onSigned={(medic, pin) => {
             setSigning(false);
-            const idA = `U${nextSeq}A`;
-            const idB = `U${nextSeq}B`;
+            const compactId = consignmentId.trim().replace(/-/g, "");
+            const idA = `U${compactId}A`;
+            const idB = `U${compactId}B`;
             const ids: [string, string] = [idA, idB];
             const nowIso = new Date(now).toISOString();
 
@@ -1070,8 +1071,9 @@ export function RestockBase({
           onCancel={() => setSigning(false)}
           onSigned={(medic, pin) => {
             setSigning(false);
-            const idA = `U${nextSeq}A`;
-            const idB = `U${nextSeq}B`;
+            const compactId = consignmentId.trim().replace(/-/g, "");
+            const idA = `U${compactId}A`;
+            const idB = `U${compactId}B`;
             const ids: [string, string] = [idA, idB];
             const nowIso = new Date(now).toISOString();
 
