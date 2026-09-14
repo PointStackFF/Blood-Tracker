@@ -27,10 +27,10 @@ const STATE_TONE: Record<UnitState, Tone> = {
 };
 
 const TONE: Record<Tone, { chip: string; bar: string }> = {
-  sky: { chip: "bg-sky-100 text-sky-900 ring-sky-300", bar: "bg-sky-500" },
-  amber: { chip: "bg-amber-100 text-amber-900 ring-amber-400", bar: "bg-amber-500" },
-  rose: { chip: "bg-rose-100 text-rose-900 ring-rose-400", bar: "bg-rose-500" },
-  zinc: { chip: "bg-zinc-200 text-zinc-700 ring-zinc-300", bar: "bg-zinc-400" },
+  sky: { chip: "bg-sky-100 dark:bg-sky-900/50 text-sky-900 dark:text-sky-200 ring-sky-300 dark:ring-sky-700", bar: "bg-sky-500" },
+  amber: { chip: "bg-amber-100 dark:bg-amber-900/50 text-amber-900 dark:text-amber-200 ring-amber-400 dark:ring-amber-700", bar: "bg-amber-500" },
+  rose: { chip: "bg-rose-100 dark:bg-rose-900/50 text-rose-900 dark:text-rose-200 ring-rose-400 dark:ring-rose-700", bar: "bg-rose-500" },
+  zinc: { chip: "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 ring-zinc-300 dark:ring-zinc-700", bar: "bg-zinc-400" },
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -66,9 +66,9 @@ export function Button({ variant = "primary", className = "", ...props }: Button
   const base =
     "w-full rounded-xl px-5 py-4 text-[17px] font-semibold transition active:scale-[.99] disabled:opacity-40 disabled:active:scale-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-300";
   const styles: Record<NonNullable<ButtonProps["variant"]>, string> = {
-    primary: "bg-zinc-900 text-white hover:bg-zinc-800",
+    primary: "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200",
     danger: "bg-rose-700 text-white hover:bg-rose-600",
-    quiet: "bg-white text-zinc-800 ring-1 ring-zinc-300 hover:bg-zinc-50",
+    quiet: "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 ring-1 ring-zinc-300 dark:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800",
   };
   return <button className={`${base} ${styles[variant]} ${className}`} {...props} />;
 }
@@ -76,8 +76,8 @@ export function Button({ variant = "primary", className = "", ...props }: Button
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <div className="mt-5">
-      <div className="text-[16px] font-medium text-zinc-900">{label}</div>
-      {hint && <div className="mt-0.5 text-[14px] text-zinc-500">{hint}</div>}
+      <div className="text-[16px] font-medium text-zinc-900 dark:text-zinc-100">{label}</div>
+      {hint && <div className="mt-0.5 text-[14px] text-zinc-500 dark:text-zinc-400">{hint}</div>}
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -102,7 +102,7 @@ export function Toggle({
               ? v === "pass"
                 ? "bg-emerald-600 text-white ring-emerald-600"
                 : "bg-rose-700 text-white ring-rose-700"
-              : "bg-white text-zinc-700 ring-zinc-300 hover:bg-zinc-50"
+              : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 ring-zinc-300 dark:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
           }`}
         >
           {v}
@@ -116,7 +116,7 @@ export function NumInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       inputMode="numeric"
-      className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[18px] focus:border-zinc-900 focus:outline-none"
+      className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-mono text-[18px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
       {...props}
     />
   );
@@ -144,27 +144,27 @@ export function UnitTag({
       disabled={!onClick}
       className="block w-full rounded-2xl text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-300"
     >
-      <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-300">
+      <div className="overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 ring-1 ring-zinc-300 dark:ring-zinc-700">
         <div className={`h-1.5 w-full ${TONE[tone].bar}`} />
         <div className="px-5 pb-5 pt-4">
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-[13px] font-semibold tracking-wide text-zinc-500">
+            <span className="text-[13px] font-semibold tracking-wide text-zinc-500 dark:text-zinc-400">
               Unit {unit.id.slice(1)}
             </span>
             <Chip tone={tone}>{STATE_LABEL[snap.state]}</Chip>
           </div>
-          <div className="mt-2 font-mono text-[19px] leading-tight tracking-tight text-zinc-900">
+          <div className="mt-2 font-mono text-[19px] leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
             {unit.unitNumber}
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] text-zinc-700">
-            <span className="font-semibold text-zinc-900">{unit.aboRh}</span>
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] text-zinc-700 dark:text-zinc-300">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100">{unit.aboRh}</span>
             <span className="font-mono">{unit.productCode}</span>
-            <span className={left <= 3 ? "font-medium text-rose-700" : ""}>
+            <span className={left <= 3 ? "font-medium text-rose-700 dark:text-rose-300" : ""}>
               Expires {mdy(new Date(unit.expires))} · {left}d
             </span>
           </div>
           {showClock && snap.state === "IN_COOLER" && snap.since && (
-            <div className="mt-3 border-t border-zinc-200 pt-3 text-[14px] text-zinc-500">
+            <div className="mt-3 border-t border-zinc-200 dark:border-zinc-800 pt-3 text-[14px] text-zinc-500 dark:text-zinc-400">
               Out since {hhmm(new Date(snap.since))}
             </div>
           )}
@@ -197,14 +197,14 @@ export function ScanRow({
         type="button"
         onClick={() => (scanned ? onScan() : setScanning(true))}
         className={`flex w-full items-center justify-between rounded-xl px-4 py-3.5 ring-1 transition ${
-          scanned ? "bg-emerald-50 ring-emerald-400" : "bg-white ring-zinc-300 hover:bg-zinc-50"
+          scanned ? "bg-emerald-50 dark:bg-emerald-950/50 ring-emerald-400 dark:ring-emerald-700" : "bg-white dark:bg-zinc-900 ring-zinc-300 dark:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
         }`}
       >
         <div className="text-left">
-          <div className="text-[13px] font-semibold text-zinc-500">Unit {unit.id.slice(1)}</div>
-          <div className="font-mono text-[16px] text-zinc-900">{unit.unitNumber}</div>
+          <div className="text-[13px] font-semibold text-zinc-500 dark:text-zinc-400">Unit {unit.id.slice(1)}</div>
+          <div className="font-mono text-[16px] text-zinc-900 dark:text-zinc-100">{unit.unitNumber}</div>
         </div>
-        <span className={`text-[15px] font-medium ${scanned ? "text-emerald-700" : "text-zinc-400"}`}>
+        <span className={`text-[15px] font-medium ${scanned ? "text-emerald-700 dark:text-emerald-300" : "text-zinc-400 dark:text-zinc-500"}`}>
           {scanned ? "Scanned" : "Scan"}
         </span>
       </button>
@@ -242,9 +242,9 @@ export function TicSwapPanel({
 }) {
   const same = toTic.trim() && toTic.trim() === String(fromTic);
   return (
-    <div className="mt-4 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-300">
-      <div className="text-[15px] font-medium text-amber-900">Rotate in a good insert</div>
-      <p className="mt-1 text-[15px] leading-relaxed text-amber-900">
+    <div className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950/50 p-4 ring-1 ring-amber-300 dark:ring-amber-800">
+      <div className="text-[15px] font-medium text-amber-900 dark:text-amber-200">Rotate in a good insert</div>
+      <p className="mt-1 text-[15px] leading-relaxed text-amber-900 dark:text-amber-200">
         TIC {fromTic || "—"} failed, not the blood. Swap it for a spare in the same cooler, then
         check the new one.
       </p>
@@ -253,18 +253,18 @@ export function TicSwapPanel({
         onChange={(e) => setToTic(e.target.value)}
         inputMode="numeric"
         placeholder="Replacement TIC number"
-        className="mt-3 w-full rounded-xl border border-amber-300 bg-white px-4 py-3 font-mono text-[17px] focus:border-amber-900 focus:outline-none"
+        className="mt-3 w-full rounded-xl border border-amber-300 dark:border-amber-700 bg-white dark:bg-zinc-900 px-4 py-3 font-mono text-[17px] focus:border-amber-900 dark:focus:border-amber-300 focus:outline-none"
       />
       <button
         type="button"
         onClick={onSwapped}
         disabled={!toTic.trim() || !!same}
-        className="mt-3 w-full rounded-xl bg-amber-900 px-4 py-3 text-[16px] font-semibold text-white hover:bg-amber-800 active:scale-[.99] disabled:opacity-40"
+        className="mt-3 w-full rounded-xl bg-amber-900 dark:bg-amber-300 px-4 py-3 text-[16px] font-semibold text-white dark:text-amber-950 hover:bg-amber-800 dark:hover:bg-amber-200 active:scale-[.99] disabled:opacity-40"
       >
         Insert swapped — check TIC {toTic.trim() || "—"}
       </button>
       {same && (
-        <div className="mt-2 text-[14px] text-amber-900">
+        <div className="mt-2 text-[14px] text-amber-900 dark:text-amber-200">
           That&apos;s the insert that just failed. Pick a different one.
         </div>
       )}
@@ -318,25 +318,25 @@ export function PinPad({
 
   return (
     <div className="fixed inset-0 z-20 flex flex-col bg-zinc-900/70 p-4 backdrop-blur-sm">
-      <div className="mt-auto rounded-3xl bg-white p-6">
-        <div className="text-[15px] text-zinc-500">Sign this entry</div>
-        <div className="mt-1 text-[19px] font-semibold leading-snug text-zinc-900">{summary}</div>
+      <div className="mt-auto rounded-3xl bg-white dark:bg-zinc-900 p-6">
+        <div className="text-[15px] text-zinc-500 dark:text-zinc-400">Sign this entry</div>
+        <div className="mt-1 text-[19px] font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{summary}</div>
         <div className="mt-6 flex justify-center gap-3">
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className={`h-4 w-4 rounded-full ring-1 ring-zinc-400 ${i < pin.length ? "bg-zinc-900" : ""}`}
+              className={`h-4 w-4 rounded-full ring-1 ring-zinc-400 dark:ring-zinc-500 ${i < pin.length ? "bg-zinc-900 dark:bg-zinc-100" : ""}`}
             />
           ))}
         </div>
-        <div className="mt-3 h-5 text-center text-[14px] text-rose-700">{error}</div>
+        <div className="mt-3 h-5 text-center text-[14px] text-rose-700 dark:text-rose-300">{error}</div>
         <div className="mt-2 grid grid-cols-3 gap-3">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
             <button
               key={d}
               type="button"
               onClick={() => press(d)}
-              className="rounded-xl bg-zinc-100 py-5 font-mono text-[24px] hover:bg-zinc-200 active:scale-[.98]"
+              className="rounded-xl bg-zinc-100 dark:bg-zinc-800 py-5 font-mono text-[24px] hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-[.98]"
             >
               {d}
             </button>
@@ -344,26 +344,26 @@ export function PinPad({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl py-5 text-[16px] text-zinc-600 hover:bg-zinc-100"
+            className="rounded-xl py-5 text-[16px] text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={() => press("0")}
-            className="rounded-xl bg-zinc-100 py-5 font-mono text-[24px] hover:bg-zinc-200 active:scale-[.98]"
+            className="rounded-xl bg-zinc-100 dark:bg-zinc-800 py-5 font-mono text-[24px] hover:bg-zinc-200 dark:hover:bg-zinc-700 active:scale-[.98]"
           >
             0
           </button>
           <button
             type="button"
             onClick={() => setPin(pin.slice(0, -1))}
-            className="rounded-xl py-5 text-[16px] text-zinc-600 hover:bg-zinc-100"
+            className="rounded-xl py-5 text-[16px] text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
           >
             Delete
           </button>
         </div>
-        <div className="mt-4 text-center text-[13px] text-zinc-500">
+        <div className="mt-4 text-center text-[13px] text-zinc-500 dark:text-zinc-400">
           Demo PINs: 4417 (K. Reagan) · 2280 (J. Marek)
         </div>
       </div>

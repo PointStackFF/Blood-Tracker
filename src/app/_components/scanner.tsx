@@ -38,7 +38,7 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full rounded-xl bg-zinc-900 px-5 py-4 text-[17px] font-semibold text-white transition active:scale-[.99] disabled:opacity-40"
+      className="w-full rounded-xl bg-zinc-900 dark:bg-zinc-100 px-5 py-4 text-[17px] font-semibold text-white dark:text-zinc-900 transition active:scale-[.99] disabled:opacity-40"
     >
       {children}
     </button>
@@ -311,9 +311,9 @@ export function Scanner<T>({ title, hint, validateScan, validateManual, onAccept
         </QuietButton>
       </div>
 
-      <div className="mt-auto rounded-t-3xl bg-white p-5 text-zinc-900">
-        <div className="text-[15px] font-medium text-zinc-900">Type it in instead</div>
-        <p className="mt-1 text-[14px] leading-relaxed text-zinc-600">
+      <div className="mt-auto rounded-t-3xl bg-white dark:bg-zinc-900 p-5 text-zinc-900 dark:text-zinc-100">
+        <div className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100">Type it in instead</div>
+        <p className="mt-1 text-[14px] leading-relaxed text-zinc-600 dark:text-zinc-400">
           Camera trouble happens. This works every time.
         </p>
         <input
@@ -323,9 +323,9 @@ export function Scanner<T>({ title, hint, validateScan, validateManual, onAccept
             setManualError("");
           }}
           placeholder="W1833 26 337371 8"
-          className="mt-3 w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[16px] focus:border-zinc-900 focus:outline-none"
+          className="mt-3 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-mono text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
         />
-        {manualError && <div className="mt-1.5 text-[14px] text-rose-700">{manualError}</div>}
+        {manualError && <div className="mt-1.5 text-[14px] text-rose-700 dark:text-rose-300">{manualError}</div>}
         <div className="mt-3">
           <PrimaryButton onClick={submitManual} disabled={!manual.trim()}>
             Use this number

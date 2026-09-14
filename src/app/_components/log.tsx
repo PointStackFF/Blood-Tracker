@@ -39,17 +39,17 @@ export interface LogRow {
 export function LogScreen({ rows, onBack }: { rows: LogRow[]; onBack: () => void }) {
   return (
     <div className="px-5 pb-10 pt-4">
-      <button onClick={onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+      <button onClick={onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         Back
       </button>
       <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Custody log</h2>
-      <p className="mt-1 text-[16px] text-zinc-600">
+      <p className="mt-1 text-[16px] text-zinc-600 dark:text-zinc-400">
         Every entry, in order. Nothing here can be edited or deleted.
       </p>
 
-      <div className="mt-5 overflow-x-auto rounded-2xl ring-1 ring-zinc-300">
-        <table className="w-full border-collapse bg-white text-left text-[14px]">
-          <thead className="bg-zinc-100 text-zinc-700">
+      <div className="mt-5 overflow-x-auto rounded-2xl ring-1 ring-zinc-300 dark:ring-zinc-700">
+        <table className="w-full border-collapse bg-white dark:bg-zinc-900 text-left text-[14px]">
+          <thead className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
             <tr>
               {["#", "Unit", "Date", "Time", "Entry", "Details", "Signed", "Offline"].map((h) => (
                 <th key={h} className="whitespace-nowrap px-3 py-2.5 font-semibold">
@@ -63,17 +63,17 @@ export function LogScreen({ rows, onBack }: { rows: LogRow[]; onBack: () => void
               const d = new Date(e.at);
               const bits = detailBits(e.detail);
               return (
-                <tr key={e.id} className="border-t border-zinc-200 align-top">
-                  <td className="px-3 py-2.5 font-mono text-zinc-500">{e.id}</td>
+                <tr key={e.id} className="border-t border-zinc-200 dark:border-zinc-800 align-top">
+                  <td className="px-3 py-2.5 font-mono text-zinc-500 dark:text-zinc-400">{e.id}</td>
                   <td className="whitespace-nowrap px-3 py-2.5 font-mono">{unitLabel}</td>
                   <td className="whitespace-nowrap px-3 py-2.5 font-mono">{mdy(d)}</td>
                   <td className="px-3 py-2.5 font-mono">{hhmm(d)}</td>
-                  <td className="whitespace-nowrap px-3 py-2.5 font-medium text-zinc-900">
+                  <td className="whitespace-nowrap px-3 py-2.5 font-medium text-zinc-900 dark:text-zinc-100">
                     {TYPE_LABEL[e.type]}
                   </td>
-                  <td className="px-3 py-2.5 text-zinc-600">{bits.join(" · ") || "—"}</td>
+                  <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-400">{bits.join(" · ") || "—"}</td>
                   <td className="whitespace-nowrap px-3 py-2.5">{medicName}</td>
-                  <td className="whitespace-nowrap px-3 py-2.5 text-zinc-500">
+                  <td className="whitespace-nowrap px-3 py-2.5 text-zinc-500 dark:text-zinc-400">
                     {e.capturedOffline ? "Yes" : ""}
                   </td>
                 </tr>
@@ -81,7 +81,7 @@ export function LogScreen({ rows, onBack }: { rows: LogRow[]; onBack: () => void
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-3 py-6 text-center text-zinc-500">
+                <td colSpan={8} className="px-3 py-6 text-center text-zinc-500 dark:text-zinc-400">
                   No entries yet.
                 </td>
               </tr>

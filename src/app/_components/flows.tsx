@@ -74,11 +74,11 @@ export function PackOut({
 
   return (
     <div className="px-5 pb-10 pt-4">
-      <button onClick={onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+      <button onClick={onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         Back
       </button>
       <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Take the pack out</h2>
-      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600">
+      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600 dark:text-zinc-400">
         Both units travel together. Scan each bag as it goes in.
       </p>
 
@@ -102,7 +102,7 @@ export function PackOut({
           <div className="space-y-4">
             {units.map((u) => (
               <div key={u.id}>
-                <div className="mb-1.5 text-[14px] text-zinc-600">
+                <div className="mb-1.5 text-[14px] text-zinc-600 dark:text-zinc-400">
                   Unit {u.id.slice(1)} · <span className="font-mono">{u.unitNumber}</span>
                 </div>
                 <Toggle value={visual[u.id] ?? null} onChange={(v) => setVisual((s) => ({ ...s, [u.id]: v }))} />
@@ -113,7 +113,7 @@ export function PackOut({
       )}
 
       {failing.length > 0 && (
-        <div className="mt-4 rounded-xl bg-rose-50 p-4 text-[15px] leading-relaxed text-rose-900 ring-1 ring-rose-200">
+        <div className="mt-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 p-4 text-[15px] leading-relaxed text-rose-900 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-900">
           {failing.map((u) => `Unit ${u.id.slice(1)}`).join(" and ")}{" "}
           {failing.length > 1 ? "fail" : "fails"} inspection and won&apos;t go out.{" "}
           {passing.length > 0 ? "The rest of the pack can still travel." : "Nothing is going out — tell the blood bank."}
@@ -140,7 +140,7 @@ export function PackOut({
       )}
 
       {swaps.length > 0 && tic === "pass" && (
-        <div className="mt-4 rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-700">
+        <div className="mt-4 rounded-xl bg-zinc-100 dark:bg-zinc-800 p-4 text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300">
           {swaps.map((s) => `TIC ${s.from} → ${s.to}`).join(", ")} logged on this entry.
         </div>
       )}
@@ -149,7 +149,7 @@ export function PackOut({
         <Button onClick={() => setSigning(true)} disabled={!ready}>
           Sign and log
         </Button>
-        <div className="mt-3 text-center text-[13px] text-zinc-500">
+        <div className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">
           Timestamped {mdy(new Date(now))} at {hhmm(new Date(now))}
         </div>
       </div>
@@ -224,11 +224,11 @@ export function PackIn({
 
   return (
     <div className="px-5 pb-10 pt-4">
-      <button onClick={onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+      <button onClick={onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         Back
       </button>
       <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Put the pack back</h2>
-      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600">
+      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600 dark:text-zinc-400">
         {units.length === totalUnits
           ? "Both units coming back in."
           : `${units.length} unit${units.length === 1 ? "" : "s"} coming back — the rest is already accounted for.`}
@@ -260,7 +260,7 @@ export function PackIn({
         <Button onClick={() => setSigning(true)} disabled={!ready}>
           Sign and log
         </Button>
-        <div className="mt-3 text-center text-[13px] text-zinc-500">
+        <div className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">
           Timestamped {mdy(new Date(now))} at {hhmm(new Date(now))}
         </div>
       </div>
@@ -314,11 +314,11 @@ export function RotateTic({
 
   return (
     <div className="px-5 pb-10 pt-4">
-      <button onClick={onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+      <button onClick={onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         Back
       </button>
       <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Rotate the TIC</h2>
-      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600">
+      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600 dark:text-zinc-400">
         Both units move to the new insert together. Their custody doesn&apos;t change.
       </p>
 
@@ -343,7 +343,7 @@ export function RotateTic({
               onChange={(e) => setReason(e.target.value)}
               rows={2}
               placeholder="Coolant spent, insert warm to the touch"
-              className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
             />
           </Field>
         </>
@@ -353,7 +353,7 @@ export function RotateTic({
         <Button onClick={() => setSigning(true)} disabled={!swapped || tic !== "pass"}>
           Sign and log
         </Button>
-        <div className="mt-3 text-center text-[13px] text-zinc-500">
+        <div className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">
           Timestamped {mdy(new Date(now))} at {hhmm(new Date(now))}
         </div>
       </div>
@@ -452,7 +452,7 @@ export function UnitScreen({
 
   return (
     <div className="px-5 pb-10 pt-4">
-      <button onClick={mode ? reset : onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+      <button onClick={mode ? reset : onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         {mode ? "Choose something else" : "Back"}
       </button>
 
@@ -468,7 +468,7 @@ export function UnitScreen({
               <Button variant="quiet" onClick={() => setMode("DISCARD")}>
                 Discard
               </Button>
-              <div className="pt-1 text-center text-[14px] leading-relaxed text-zinc-500">
+              <div className="pt-1 text-center text-[14px] leading-relaxed text-zinc-500 dark:text-zinc-400">
                 Putting it back in the fridge happens with the whole pack, from the main screen.
               </div>
             </>
@@ -480,7 +480,7 @@ export function UnitScreen({
           )}
           {snap.state === "QUARANTINE" && (
             <>
-              <div className="rounded-xl bg-rose-50 p-4 text-[15px] leading-relaxed text-rose-900 ring-1 ring-rose-200">
+              <div className="rounded-xl bg-rose-50 dark:bg-rose-950/50 p-4 text-[15px] leading-relaxed text-rose-900 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-900">
                 This unit failed inspection and can&apos;t go back into storage or into a patient.
               </div>
               <Button variant="danger" onClick={() => setMode("DISCARD")}>
@@ -489,14 +489,14 @@ export function UnitScreen({
             </>
           )}
           {TERMINAL.includes(snap.state) && (
-            <div className="rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-700">
+            <div className="rounded-xl bg-zinc-100 dark:bg-zinc-800 p-4 text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300">
               This unit&apos;s record is closed. Nothing further to log.
             </div>
           )}
           {!TERMINAL.includes(snap.state) && (
             <button
               onClick={() => setMode("FLAG")}
-              className="w-full pt-2 text-center text-[15px] text-zinc-600 underline underline-offset-4 hover:text-zinc-900"
+              className="w-full pt-2 text-center text-[15px] text-zinc-600 dark:text-zinc-400 underline underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
               Something looks off — flag for blood bank review
             </button>
@@ -512,7 +512,7 @@ export function UnitScreen({
                 value={mrn}
                 onChange={(e) => setMrn(e.target.value)}
                 placeholder="0012345678"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[18px] focus:border-zinc-900 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-mono text-[18px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
               />
             </Field>
           ) : (
@@ -521,13 +521,13 @@ export function UnitScreen({
                 value={incident}
                 onChange={(e) => setIncident(e.target.value)}
                 placeholder="2026-0904-017"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[17px] focus:border-zinc-900 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-mono text-[17px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
               />
             </Field>
           )}
           <button
             onClick={() => setMrnPending(!mrnPending)}
-            className="mt-3 text-[15px] text-zinc-600 underline underline-offset-4 hover:text-zinc-900"
+            className="mt-3 text-[15px] text-zinc-600 dark:text-zinc-400 underline underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
             {mrnPending ? "I have the MRN" : "No MRN yet — log the incident number"}
           </button>
@@ -541,13 +541,13 @@ export function UnitScreen({
             onChange={(e) => setReason(e.target.value)}
             rows={3}
             placeholder={mode === "DISCARD" ? "Bag damaged in transport" : "Bag felt warmer than expected"}
-            className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
           />
         </Field>
       )}
 
       {mode === "RETURN_BB" && (
-        <div className="mt-5 rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-700">
+        <div className="mt-5 rounded-xl bg-zinc-100 dark:bg-zinc-800 p-4 text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300">
           Logs the unit as leaving this location. The blood bank confirms it on their end when it arrives.
         </div>
       )}
@@ -557,7 +557,7 @@ export function UnitScreen({
           <Button onClick={() => setSigning(true)} disabled={!ready()}>
             Sign and log
           </Button>
-          <div className="mt-3 text-center text-[13px] text-zinc-500">
+          <div className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">
             Timestamped {mdy(new Date(now))} at {hhmm(new Date(now))}
           </div>
         </div>
@@ -663,11 +663,11 @@ export function ReceiveConsignment({
 
   return (
     <div className="px-5 pb-10 pt-4">
-      <button onClick={onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+      <button onClick={onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         Back
       </button>
       <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Receive new consignment</h2>
-      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600">
+      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600 dark:text-zinc-400">
         At the hospital, hand off whatever&apos;s left and log the fresh pair going back into the
         same TIC and cooler.
       </p>
@@ -681,7 +681,7 @@ export function ReceiveConsignment({
             {leftoverUnits.map((u) => (
               <div
                 key={u.id}
-                className="rounded-xl bg-zinc-100 px-4 py-3 text-[15px] text-zinc-700"
+                className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-4 py-3 text-[15px] text-zinc-700 dark:text-zinc-300"
               >
                 Unit {u.id.slice(1)} · <span className="font-mono">{u.unitNumber}</span>
               </div>
@@ -695,14 +695,14 @@ export function ReceiveConsignment({
           value={issuedBy}
           onChange={(e) => setIssuedBy(e.target.value)}
           placeholder="Name"
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
         />
       </Field>
 
       {([0, 1] as const).map((i) => (
-        <div key={i} className="mt-5 rounded-xl bg-zinc-50 p-4 ring-1 ring-zinc-200">
-          <div className="text-[14px] font-semibold text-zinc-500">New unit {i === 0 ? "A" : "B"}</div>
-          <div className="mt-2 text-[13px] text-zinc-500">{NEW_UNIT_ABO_RH} · {NEW_UNIT_PRODUCT_CODE}</div>
+        <div key={i} className="mt-5 rounded-xl bg-zinc-50 dark:bg-zinc-900 p-4 ring-1 ring-zinc-200 dark:ring-zinc-800">
+          <div className="text-[14px] font-semibold text-zinc-500 dark:text-zinc-400">New unit {i === 0 ? "A" : "B"}</div>
+          <div className="mt-2 text-[13px] text-zinc-500 dark:text-zinc-400">{NEW_UNIT_ABO_RH} · {NEW_UNIT_PRODUCT_CODE}</div>
           <Field label="Unit number">
             <div className="flex gap-2">
               <input
@@ -714,18 +714,18 @@ export function ReceiveConsignment({
                   setUnitEntries(next);
                 }}
                 placeholder="W1833 26 411203 8"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[16px] focus:border-zinc-900 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-mono text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setScanning(i)}
-                className="shrink-0 rounded-xl bg-zinc-900 px-4 py-3 text-[15px] font-semibold text-white active:scale-[.99]"
+                className="shrink-0 rounded-xl bg-zinc-900 dark:bg-zinc-100 px-4 py-3 text-[15px] font-semibold text-white dark:text-zinc-900 active:scale-[.99]"
               >
                 Scan
               </button>
             </div>
             {unitEntries[i].raw.trim() && !dins[i] && (
-              <div className="mt-1.5 text-[14px] text-rose-700">
+              <div className="mt-1.5 text-[14px] text-rose-700 dark:text-rose-300">
                 Doesn&apos;t look like a full unit number — check for a missing or extra digit.
               </div>
             )}
@@ -759,7 +759,7 @@ export function ReceiveConsignment({
                 next[i] = e.target.value;
                 setExpires(next);
               }}
-              className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
             />
           </Field>
           <Field label="Visual inspection">
@@ -776,7 +776,7 @@ export function ReceiveConsignment({
       ))}
 
       {failing.length > 0 && (
-        <div className="mt-4 rounded-xl bg-rose-50 p-4 text-[15px] leading-relaxed text-rose-900 ring-1 ring-rose-200">
+        <div className="mt-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 p-4 text-[15px] leading-relaxed text-rose-900 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-900">
           New unit{failing.length > 1 ? "s" : ""} {failing.map((i) => (i === 0 ? "A" : "B")).join(" and ")}{" "}
           fail{failing.length === 1 ? "s" : ""} inspection and won&apos;t go out. Tell the hospital blood
           bank before leaving.
@@ -817,7 +817,7 @@ export function ReceiveConsignment({
         <Button onClick={() => setSigning(true)} disabled={!ready}>
           Sign and log
         </Button>
-        <div className="mt-3 text-center text-[13px] text-zinc-500">
+        <div className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">
           Timestamped {mdy(new Date(now))} at {hhmm(new Date(now))}
         </div>
       </div>
@@ -939,11 +939,11 @@ export function RestockBase({
 
   return (
     <div className="px-5 pb-10 pt-4">
-      <button onClick={onBack} className="text-[15px] text-zinc-600 hover:text-zinc-900">
+      <button onClick={onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         Back
       </button>
       <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Restock this base</h2>
-      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600">
+      <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600 dark:text-zinc-400">
         Scheduled biweekly swap — supervisor sign-off required. Whatever&apos;s in the fridge goes
         back to the blood bank; the fresh pair goes straight in.
       </p>
@@ -955,7 +955,7 @@ export function RestockBase({
         >
           <div className="space-y-2">
             {oldUnits.map((u) => (
-              <div key={u.id} className="rounded-xl bg-zinc-100 px-4 py-3 text-[15px] text-zinc-700">
+              <div key={u.id} className="rounded-xl bg-zinc-100 dark:bg-zinc-800 px-4 py-3 text-[15px] text-zinc-700 dark:text-zinc-300">
                 Unit {u.id.slice(1)} · <span className="font-mono">{u.unitNumber}</span>
               </div>
             ))}
@@ -968,14 +968,14 @@ export function RestockBase({
           value={issuedBy}
           onChange={(e) => setIssuedBy(e.target.value)}
           placeholder="Name"
-          className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
         />
       </Field>
 
       {([0, 1] as const).map((i) => (
-        <div key={i} className="mt-5 rounded-xl bg-zinc-50 p-4 ring-1 ring-zinc-200">
-          <div className="text-[14px] font-semibold text-zinc-500">New unit {i === 0 ? "A" : "B"}</div>
-          <div className="mt-2 text-[13px] text-zinc-500">{NEW_UNIT_ABO_RH} · {NEW_UNIT_PRODUCT_CODE}</div>
+        <div key={i} className="mt-5 rounded-xl bg-zinc-50 dark:bg-zinc-900 p-4 ring-1 ring-zinc-200 dark:ring-zinc-800">
+          <div className="text-[14px] font-semibold text-zinc-500 dark:text-zinc-400">New unit {i === 0 ? "A" : "B"}</div>
+          <div className="mt-2 text-[13px] text-zinc-500 dark:text-zinc-400">{NEW_UNIT_ABO_RH} · {NEW_UNIT_PRODUCT_CODE}</div>
           <Field label="Unit number">
             <div className="flex gap-2">
               <input
@@ -987,18 +987,18 @@ export function RestockBase({
                   setUnitEntries(next);
                 }}
                 placeholder="W1833 26 411203 8"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 font-mono text-[16px] focus:border-zinc-900 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-mono text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setScanning(i)}
-                className="shrink-0 rounded-xl bg-zinc-900 px-4 py-3 text-[15px] font-semibold text-white active:scale-[.99]"
+                className="shrink-0 rounded-xl bg-zinc-900 dark:bg-zinc-100 px-4 py-3 text-[15px] font-semibold text-white dark:text-zinc-900 active:scale-[.99]"
               >
                 Scan
               </button>
             </div>
             {unitEntries[i].raw.trim() && !dins[i] && (
-              <div className="mt-1.5 text-[14px] text-rose-700">
+              <div className="mt-1.5 text-[14px] text-rose-700 dark:text-rose-300">
                 Doesn&apos;t look like a full unit number — check for a missing or extra digit.
               </div>
             )}
@@ -1032,7 +1032,7 @@ export function RestockBase({
                 next[i] = e.target.value;
                 setExpires(next);
               }}
-              className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-[16px] focus:border-zinc-900 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-[16px] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none"
             />
           </Field>
           <Field label="Visual inspection">
@@ -1049,7 +1049,7 @@ export function RestockBase({
       ))}
 
       {failing.length > 0 && (
-        <div className="mt-4 rounded-xl bg-rose-50 p-4 text-[15px] leading-relaxed text-rose-900 ring-1 ring-rose-200">
+        <div className="mt-4 rounded-xl bg-rose-50 dark:bg-rose-950/50 p-4 text-[15px] leading-relaxed text-rose-900 dark:text-rose-200 ring-1 ring-rose-200 dark:ring-rose-900">
           New unit{failing.length > 1 ? "s" : ""} {failing.map((i) => (i === 0 ? "A" : "B")).join(" and ")}{" "}
           fail{failing.length === 1 ? "s" : ""} inspection and won&apos;t be stocked. Tell the blood
           bank before they leave.
@@ -1060,7 +1060,7 @@ export function RestockBase({
         <Button onClick={() => setSigning(true)} disabled={!ready}>
           Sign and log
         </Button>
-        <div className="mt-3 text-center text-[13px] text-zinc-500">
+        <div className="mt-3 text-center text-[13px] text-zinc-500 dark:text-zinc-400">
           Timestamped {mdy(new Date(now))} at {hhmm(new Date(now))}
         </div>
       </div>

@@ -23,6 +23,7 @@ import {
   type Entry,
 } from "./_components/flows";
 import { LogScreen, type LogRow } from "./_components/log";
+import { ThemeToggle } from "./_components/theme";
 
 type View = "home" | "packout" | "packin" | "rotate" | "unit" | "log" | "receive" | "restock";
 
@@ -237,20 +238,23 @@ export default function App() {
   }, [unitDetails, medicName]);
 
   if (loading || !locationLoaded) {
-    return <div className="p-8 text-center text-zinc-500">Loading…</div>;
+    return <div className="p-8 text-center text-zinc-500 dark:text-zinc-400">Loading…</div>;
   }
   if (loadError) {
-    return <div className="p-8 text-center text-rose-700">{loadError}</div>;
+    return <div className="p-8 text-center text-rose-700 dark:text-rose-300">{loadError}</div>;
   }
   // An empty database is a legitimate state, not an error: a supervisor
   // restocks the base from the home screen, so fall through to it.
 
   if (!location) {
     return (
-      <div className="min-h-screen bg-zinc-100 font-sans text-zinc-900">
-        <div className="mx-auto flex min-h-screen max-w-[480px] flex-col justify-center bg-zinc-50 px-5 shadow-sm">
-          <h1 className="text-[22px] font-semibold tracking-tight">Which base?</h1>
-          <p className="mt-1 text-[16px] leading-relaxed text-zinc-600">
+      <div className="min-h-screen bg-zinc-100 dark:bg-black font-sans text-zinc-900 dark:text-zinc-100">
+        <div className="mx-auto flex min-h-screen max-w-[480px] flex-col justify-center bg-zinc-50 dark:bg-zinc-950 px-5 shadow-sm">
+          <div className="flex items-baseline justify-between gap-3">
+            <h1 className="text-[22px] font-semibold tracking-tight">Which base?</h1>
+            <ThemeToggle />
+          </div>
+          <p className="mt-1 text-[16px] leading-relaxed text-zinc-600 dark:text-zinc-400">
             This stays set on this phone until you switch it.
           </p>
           <div className="mt-6 space-y-3">
@@ -269,20 +273,23 @@ export default function App() {
   const headerConsignments = activeConsignments.length > 0 ? activeConsignments : relevantConsignments.slice(0, 1);
 
   return (
-    <div className="min-h-screen bg-zinc-100 font-sans text-zinc-900">
-      <div className="mx-auto min-h-screen max-w-[480px] bg-zinc-50 shadow-sm">
-        <header className="border-b border-zinc-200 bg-white px-5 pb-4 pt-5">
+    <div className="min-h-screen bg-zinc-100 dark:bg-black font-sans text-zinc-900 dark:text-zinc-100">
+      <div className="mx-auto min-h-screen max-w-[480px] bg-zinc-50 dark:bg-zinc-950 shadow-sm">
+        <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 pb-4 pt-5">
           <div className="flex items-baseline justify-between gap-3">
             <div className="text-[20px] font-semibold tracking-tight">{location}</div>
-            <button
-              onClick={() => setLocation(null)}
-              className="text-[13px] font-medium text-zinc-400 hover:text-zinc-700"
-            >
-              Switch base
-            </button>
+            <div className="flex gap-4">
+              <ThemeToggle />
+              <button
+                onClick={() => setLocation(null)}
+                className="text-[13px] font-medium text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+              >
+                Switch base
+              </button>
+            </div>
           </div>
           {headerConsignments.map((c) => (
-            <div key={c.id} className="mt-0.5 text-[14px] text-zinc-500">
+            <div key={c.id} className="mt-0.5 text-[14px] text-zinc-500 dark:text-zinc-400">
               Consignment {c.id} · issued {mdy(new Date(c.issuedAt))} by {c.issuedBy}
             </div>
           ))}
@@ -291,28 +298,28 @@ export default function App() {
         {view === "home" && (
           <div className="px-5 pb-10 pt-5">
             {packOut && pack ? (
-              <div className="rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-300">
+              <div className="rounded-2xl bg-amber-50 dark:bg-amber-950/50 p-5 ring-1 ring-amber-300 dark:ring-amber-800">
                 <div className="flex items-baseline justify-between">
-                  <div className="text-[15px] font-medium text-amber-900">
+                  <div className="text-[15px] font-medium text-amber-900 dark:text-amber-200">
                     Pack out · TIC {pack.ticNo} in cooler {pack.cooler}
                   </div>
                   {pack.since && (
-                    <div className="text-[13px] text-amber-800">since {hhmm(new Date(pack.since))}</div>
+                    <div className="text-[13px] text-amber-800 dark:text-amber-300">since {hhmm(new Date(pack.since))}</div>
                   )}
                 </div>
                 {pack.since && (
-                  <div className="mt-2 font-mono text-[44px] leading-none tracking-tight text-amber-800">
+                  <div className="mt-2 font-mono text-[44px] leading-none tracking-tight text-amber-800 dark:text-amber-300">
                     {elapsed(pack.since, now)}
                   </div>
                 )}
-                <div className="mt-2 text-[14px] text-amber-900">
+                <div className="mt-2 text-[14px] text-amber-900 dark:text-amber-200">
                   {inCooler.length === 1 ? "1 unit travelling" : `${inCooler.length} units travelling`}
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl bg-white p-5 ring-1 ring-zinc-300">
-                <div className="text-[15px] font-medium text-zinc-900">Pack in the fridge</div>
-                <div className="mt-1 text-[15px] leading-relaxed text-zinc-600">
+              <div className="rounded-2xl bg-white dark:bg-zinc-900 p-5 ring-1 ring-zinc-300 dark:ring-zinc-700">
+                <div className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100">Pack in the fridge</div>
+                <div className="mt-1 text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-400">
                   {inFridge.length > 0
                     ? `${inFridge.length} unit${inFridge.length > 1 ? "s" : ""} stored and ready.`
                     : "Nothing left in storage here."}
@@ -359,7 +366,7 @@ export default function App() {
               </Button>
             </div>
 
-            <div className="mt-6 text-[14px] leading-relaxed text-zinc-500">
+            <div className="mt-6 text-[14px] leading-relaxed text-zinc-500 dark:text-zinc-400">
               {unitList.length === 0
                 ? "No consignment on hand at this location right now."
                 : open.length === 0
@@ -435,7 +442,7 @@ export default function App() {
       </div>
 
       {toast && (
-        <div className="fixed inset-x-0 bottom-6 z-30 mx-auto w-[min(440px,90vw)] rounded-xl bg-zinc-900 px-4 py-3 text-center text-[15px] text-white">
+        <div className="fixed inset-x-0 bottom-6 z-30 mx-auto w-[min(440px,90vw)] rounded-xl bg-zinc-900 dark:bg-zinc-100 px-4 py-3 text-center text-[15px] text-white dark:text-zinc-900">
           {toast}
         </div>
       )}

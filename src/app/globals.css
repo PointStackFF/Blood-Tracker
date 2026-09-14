@@ -1,7 +1,16 @@
 @import "tailwindcss";
 
+/* Dark mode is a per-phone choice (like the base), not only the OS setting:
+   `dark:` utilities key off an `html.dark` class that theme.tsx manages. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html {
   height: 100%;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
