@@ -351,8 +351,8 @@ export default function App() {
                   </Button>
                 </>
               ) : (
-                <Button onClick={() => setView("packout")} disabled={inFridge.length === 0}>
-                  Take the pack out
+                <Button variant="blood" onClick={() => setView("packout")} disabled={inFridge.length === 0}>
+                  Remove blood
                 </Button>
               )}
               <Button variant="quiet" onClick={() => setView("receive")}>

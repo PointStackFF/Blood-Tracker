@@ -59,7 +59,7 @@ export function Chip({ tone, children }: { tone: Tone; children: ReactNode }) {
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "danger" | "quiet";
+  variant?: "primary" | "danger" | "blood" | "quiet";
 }
 
 export function Button({ variant = "primary", className = "", ...props }: ButtonProps) {
@@ -68,6 +68,8 @@ export function Button({ variant = "primary", className = "", ...props }: Button
   const styles: Record<NonNullable<ButtonProps["variant"]>, string> = {
     primary: "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200",
     danger: "bg-rose-700 text-white hover:bg-rose-600",
+    // Removing blood from the fridge: dark red, distinct from destructive rose.
+    blood: "bg-red-900 text-white hover:bg-red-800",
     quiet: "bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 ring-1 ring-zinc-300 dark:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800",
   };
   return <button className={`${base} ${styles[variant]} ${className}`} {...props} />;

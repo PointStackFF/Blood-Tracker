@@ -77,7 +77,7 @@ export function PackOut({
       <button onClick={onBack} className="text-[15px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">
         Back
       </button>
-      <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Take the pack out</h2>
+      <h2 className="mt-4 text-[24px] font-semibold tracking-tight">Remove blood</h2>
       <p className="mt-1 max-w-[42ch] text-[16px] leading-relaxed text-zinc-600 dark:text-zinc-400">
         Both units travel together. Scan each bag as it goes in.
       </p>
