@@ -239,13 +239,11 @@ export default function App() {
   if (loading || !locationLoaded) {
     return <div className="p-8 text-center text-zinc-500">Loading…</div>;
   }
-  if (loadError || consignments.length === 0) {
-    return (
-      <div className="p-8 text-center text-rose-700">
-        {loadError || "No consignment found — run `npm run db:seed`."}
-      </div>
-    );
+  if (loadError) {
+    return <div className="p-8 text-center text-rose-700">{loadError}</div>;
   }
+  // An empty database is a legitimate state, not an error: a supervisor
+  // restocks the base from the home screen, so fall through to it.
 
   if (!location) {
     return (
