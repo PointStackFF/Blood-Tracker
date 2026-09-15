@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withTransaction } from "@/lib/db";
+import { assertUnitsAreNew, isUniqueViolation } from "@/lib/duplicates";
 import { dinKey } from "@/lib/isbt";
 import { toEventRow, type EventRowDb } from "@/lib/rows";
 import { IllegalEventError, replay, validateEvent } from "@/lib/state";
@@ -86,6 +87,7 @@ export async function POST(req: Request) {
       }
 
       const c = body.consignment;
+      await assertUnitsAreNew(client, c.id, c.units);
       await client.query(
         `INSERT INTO consignments
            (id, location, blood_bank_ref, issued_by, issued_at)
@@ -130,6 +132,12 @@ export async function POST(req: Request) {
   } catch (err) {
     if (err instanceof IllegalEventError) {
       return NextResponse.json({ error: err.message }, { status: 422 });
+    }
+    if (isUniqueViolation(err)) {
+      return NextResponse.json(
+        { error: "That unit number or consignment is already on file." },
+        { status: 422 }
+      );
     }
     throw err;
   }

@@ -20,6 +20,7 @@ import {
   RestockBase,
   RotateTic,
   UnitScreen,
+  nextConsignmentSeq,
   type Entry,
 } from "./_components/flows";
 import { LogScreen, type LogRow } from "./_components/log";
@@ -420,7 +421,7 @@ export default function App() {
           <ReceiveConsignment
             location={location}
             leftoverUnits={leftoverUnits}
-            nextSeq={relevantConsignments.length + 1}
+            nextSeq={nextConsignmentSeq(location, relevantConsignments.map((c) => c.id))}
             prefillTic={packContext?.ticNo ?? null}
             prefillCooler={packContext?.cooler ?? null}
             now={now}
@@ -433,7 +434,7 @@ export default function App() {
           <RestockBase
             location={location}
             oldUnits={inFridge}
-            nextSeq={relevantConsignments.length + 1}
+            nextSeq={nextConsignmentSeq(location, relevantConsignments.map((c) => c.id))}
             now={now}
             onCommit={commitRestock}
             onBack={() => setView("home")}

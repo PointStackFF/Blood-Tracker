@@ -591,9 +591,25 @@ const NEW_UNIT_ABO_RH = "O Neg";
 // paper form for these app-created consignments — the original blood-bank
 // issue has one printed on it, but a hospital swap or a restock doesn't.
 // The app generates its own, quietly, as an internal record identifier.
+function locationCode(location: string): string {
+  return location.startsWith("Mac") ? "MAC" : location.startsWith("Gab") ? "GAB" : "LOC";
+}
+
 function autoConsignmentId(location: string, nextSeq: number): string {
-  const code = location.startsWith("Mac") ? "MAC" : location.startsWith("Gab") ? "GAB" : "LOC";
-  return `${code}-${nextSeq}`;
+  return `${locationCode(location)}-${nextSeq}`;
+}
+
+// Counted off the generated IDs already on file, not off how many
+// consignments the location has — a location can also hold consignments
+// that came in under the blood bank's own reference, and counting those
+// would hand back an ID that already exists.
+export function nextConsignmentSeq(location: string, ids: string[]): number {
+  const pattern = new RegExp(`^${locationCode(location)}-(\d+)$`);
+  const highest = ids.reduce((max, id) => {
+    const m = id.match(pattern);
+    return m ? Math.max(max, Number(m[1])) : max;
+  }, 0);
+  return highest + 1;
 }
 
 type UnitEntry = { raw: string; din: Din | null };
